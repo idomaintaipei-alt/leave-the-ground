@@ -57,6 +57,11 @@ section.on{display:block}
 .intro-acts{display:flex;gap:10px;margin-top:28px;opacity:0;transition:opacity 1.2s ease .6s}
 .intro-acts.in{opacity:1}
 .btn.ghost{border-color:transparent;color:var(--ink2)}
+.senses{margin-top:18px}
+.senses .btn{font-size:13px;padding:9px 14px}
+.senses .btn.on{color:var(--ember)}
+.back{margin-top:16px;font-size:12.5px;letter-spacing:.15em;color:var(--ink2)}
+#s-camp .card-tilt{transition:opacity .25s linear}
 /* 風景 */
 .view-line{margin:38dvh 0 0;font-size:15px;letter-spacing:.3em;color:var(--ink2);opacity:0;transition:opacity 2.5s ease}
 .view-line.in{opacity:.8}
@@ -146,6 +151,11 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
       <button class="mood" data-m="quit">想放棄<small>覺得終點不值得</small></button>
       <button class="mood wide" data-m="any">還行，只是想看看山</button>
     </div>
+    <div class="acts senses">
+      <button class="btn ghost" id="b-tilt" hidden>讓山感覺你的手</button>
+      <button class="btn ghost" id="b-geo" hidden>讓山知道你在多高</button>
+    </div>
+    <p class="back sans" id="back-line" hidden></p>
   </section>
 
   <section id="s-camp">
@@ -301,6 +311,7 @@ function camp(){
   },100);
 }
 function summit(){
+  remember(); $("#s-camp").style.opacity=""; mtn.style.filter="";
   bars.forEach(b=>{b.classList.add("done");b.classList.remove("now");});
   $("#summit-h").textContent=`你到山頂了。`;
   $("#summit-lead").innerHTML=`今天你離開地面 <b>${alt.toLocaleString()}</b> 公尺，帶走三句話。<br>哪一句停住了你，就從那本書開始。`;
@@ -362,7 +373,7 @@ introShow();
 
 document.querySelectorAll(".mood").forEach(b=>b.addEventListener("click",()=>{
   mood=b.dataset.m; document.body.dataset.mood=mood; document.querySelector(".r1").setAttribute("d",MOODS[mood].ridge); applySky();
-  step=0;alt=0;used.clear();picked=[];camp();}));
+  step=0;alt=baseAlt;used.clear();picked=[];camp();}));
 /* 手指往上滑＝往上爬（只在營地畫面；每滑 1 像素算 0.02 秒） */
 (function(){let y0=null;
  const on=()=>$("#s-camp").classList.contains("on");
@@ -381,7 +392,7 @@ function view(){
 }
 /* 留在這裡：不攻頂，不結算 */
 function stay(){
-  clearInterval(timer); clearTimeout(viewT);
+  clearInterval(timer); clearTimeout(viewT); remember(); $("#s-camp").style.opacity=""; mtn.style.filter="";
   const bk=cur&&cur.b?BOOKS[cur.b]:null;
   $("#stay-tag").textContent=CAMPS[step]+"　"+alt.toLocaleString()+" m";
   $("#stay-q").textContent=cur?cur.q:"";
@@ -398,7 +409,7 @@ $("#b-stay-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cu
 $("#b-stay-again").onclick=()=>$("#b-again").onclick();
 $("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true);};
 $("#b-share2").onclick=()=>share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n十本山岳文學，一次一句。\n${site()}`);
-$("#b-again").onclick=()=>{clearInterval(timer);alt=0;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;applySky();bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
+$("#b-again").onclick=()=>{clearInterval(timer);alt=baseAlt;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;applySky();bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
 
 /* 自動抓新版：比對伺服器上的 ETag，不一樣就重新載入一次（朋友只要重新整理或重開就會拿到最新版） */
 (async()=>{try{
@@ -407,7 +418,55 @@ $("#b-again").onclick=()=>{clearInterval(timer);alt=0;step=0;used.clear();picked
   if(old && old!==e && !sessionStorage.getItem("ltg-reloaded")){ sessionStorage.setItem("ltg-reloaded","1"); location.reload(); }
   else sessionStorage.removeItem("ltg-reloaded");
 }catch(_){}})();
-/* ---------- 山是活的：真實時間決定天色，心情只是染一層 ---------- */
+/* ---------- 山是活的（2）：山認得你 ---------- */
+const LS={get:k=>{try{return localStorage.getItem(k)}catch(_){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(_){}}};
+const visits=+(LS.get("ltg-visits")||0), lastISO=LS.get("ltg-last"), bestAlt=+(LS.get("ltg-best")||0);
+function daysAgo(iso){ if(!iso) return null; const d=(Date.now()-new Date(iso).getTime())/864e5; return d<1?0:Math.floor(d); }
+(function(){
+  if(visits>0){
+    const n=daysAgo(lastISO); const when=n===null?"":(n===0?"今天來過了。":n===1?"上次是昨天。":`上次是 ${n} 天前。`);
+    INTRO[0]=`你回來了。${when}`; if(introI===0) introShow();
+    if(bestAlt>0) $("#back-line").textContent=`你來過 ${visits} 次，最高到過 ${bestAlt.toLocaleString()} 公尺。`, $("#back-line").hidden=false;
+  }
+  LS.set("ltg-visits",String(visits+1)); LS.set("ltg-last",new Date().toISOString());
+})();
+function remember(){ if(alt>bestAlt) LS.set("ltg-best",String(Math.round(alt))); }
+
+/* ---------- 山是活的（3）：手的傾斜 ---------- */
+let tiltOn=false;
+function onTilt(e){
+  if(!$("#s-camp").classList.contains("on")) return;
+  const beta=e.beta; if(beta==null) return;           // 0 平放、90 直立
+  const k=Math.min(1,Math.max(.12,(beta-15)/45));      // 平放很淡，舉起來才清楚
+  $("#s-camp").style.opacity=k;
+  mtn.style.filter=`brightness(${.75+.35*k})`;
+}
+async function enableTilt(){
+  try{
+    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+      const r=await DeviceOrientationEvent.requestPermission(); if(r!=="granted"){toast("沒有拿到感應權限");return;}
+    }
+    addEventListener("deviceorientation",onTilt); tiltOn=true; LS.set("ltg-tilt","1");
+    $("#b-tilt").classList.add("on"); $("#b-tilt").textContent="山感覺得到你的手了"; toast("把手機放平，字會沉下去；舉起來，字才浮出來。");
+  }catch(_){ toast("這支手機不支援"); }
+}
+if(typeof DeviceOrientationEvent!=="undefined"&&("ontouchstart" in window)){ $("#b-tilt").hidden=false; $("#b-tilt").onclick=enableTilt; }
+
+/* ---------- 山是活的（4）：海拔 ---------- */
+let baseAlt=0;
+function enableGeo(){
+  if(!navigator.geolocation){toast("這支手機沒有定位");return;}
+  $("#b-geo").textContent="山在問……";
+  navigator.geolocation.getCurrentPosition(p=>{
+    const a=p.coords.altitude;
+    if(a==null){ $("#b-geo").textContent="這裡量不到高度"; return; }
+    baseAlt=Math.round(a); alt=baseAlt; setAlt(alt);
+    $("#b-geo").classList.add("on"); $("#b-geo").textContent=`你現在在 ${baseAlt.toLocaleString()} 公尺`;
+  },()=>{ $("#b-geo").textContent="山沒有拿到位置"; },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+}
+if(navigator.geolocation){ $("#b-geo").hidden=false; $("#b-geo").onclick=enableGeo; }
+
+/* ---------- 山是活的（1）：真實時間決定天色，心情只是染一層 ---------- */
 const TIMES=[ // [起始小時, 天頂, 中段, 地平線, 星星亮度, 名字]
  [0,  "#060a0f","#0e151f","#182230",1.0,"深夜"],
  [4.5,"#0f1322","#2b2a46","#6a4852",0.6,"黎明"],
