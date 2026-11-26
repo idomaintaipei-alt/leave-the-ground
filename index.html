@@ -279,6 +279,13 @@ $("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q}�
 $("#b-share2").onclick=()=>share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n十本山岳文學，一次一句。\n${site()}`);
 $("#b-again").onclick=()=>{clearInterval(timer);alt=0;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
 
+/* 自動抓新版：比對伺服器上的 ETag，不一樣就重新載入一次（朋友只要重新整理或重開就會拿到最新版） */
+(async()=>{try{
+  const r=await fetch(location.pathname,{method:"HEAD",cache:"no-store"}); const e=r.headers.get("etag"); if(!e) return;
+  const k="ltg-etag", old=localStorage.getItem(k); localStorage.setItem(k,e);
+  if(old && old!==e && !sessionStorage.getItem("ltg-reloaded")){ sessionStorage.setItem("ltg-reloaded","1"); location.reload(); }
+  else sessionStorage.removeItem("ltg-reloaded");
+}catch(_){}})();
 (function(){const c=$("#stars"),x=c.getContext("2d");let W,H,S=[];
  function rs(){W=c.width=innerWidth*devicePixelRatio;H=c.height=innerHeight*devicePixelRatio;S=[];for(let i=0;i<140;i++)S.push({x:Math.random()*W,y:Math.random()*H*.6,r:Math.random()*1.3*devicePixelRatio+.3,p:Math.random()*6.28});}
  function dr(t){x.clearRect(0,0,W,H);for(const s of S){x.globalAlpha=.35+.45*Math.sin(t/900+s.p);x.fillStyle="#e9e4d8";x.beginPath();x.arc(s.x,s.y,s.r,0,6.28);x.fill();}requestAnimationFrame(dr);}
