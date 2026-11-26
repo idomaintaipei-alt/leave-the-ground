@@ -51,6 +51,12 @@ section{display:none;animation:up .9s ease both}
 section.on{display:block}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
+/* 開場三句 */
+.intro-line{margin:26dvh 0 0;min-height:4.6em;font-size:24px;line-height:1.8;font-weight:300;letter-spacing:.06em;text-wrap:balance;opacity:0;transition:opacity 1.8s ease}
+.intro-line.in{opacity:1}
+.intro-acts{display:flex;gap:10px;margin-top:28px;opacity:0;transition:opacity 1.2s ease .6s}
+.intro-acts.in{opacity:1}
+.btn.ghost{border-color:transparent;color:var(--ink2)}
 h1{font-weight:300;font-size:30px;line-height:1.35;letter-spacing:.06em;margin:34px 0 10px}
 .lead{color:var(--ink2);font-size:14.5px;line-height:1.95;margin-bottom:26px}
 .lead b{color:var(--ink);font-weight:500}
@@ -115,7 +121,15 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
   </header>
   <div class="camps sans" id="camps"><span>地面</span><i></i><span>一</span><i></i><span>二</span><i></i><span>三</span><i></i><span>山頂</span></div>
 
-  <section id="s-start" class="on">
+  <section id="s-intro" class="on">
+    <p class="intro-line" id="intro-line"></p>
+    <div class="intro-acts">
+      <button class="btn pri" id="b-intro-next">下一句</button>
+      <button class="btn ghost" id="b-intro-skip">跳過</button>
+    </div>
+  </section>
+
+  <section id="s-start">
     <h1>你現在<br>在哪裡？</h1>
     <p class="lead">不用回答別人，點一個就好。<br><b>三句話，三個營地。</b>每一句，字會慢慢出現；<br>你停留多久，就往上多少。不用急。</p>
     <div class="moods">
@@ -202,6 +216,12 @@ const QUOTES=[
   why:"這套書的第一句話。不用爬山，離開地面一公尺就好：關掉手機、走出門、抬頭。",ask:"現在，離開地面一公尺，你會做什麼？"},
 ];
 
+/* 開場三句（進來先看到的情境；要改字改這裡） */
+const INTRO=[
+ "有十個人，把自己放到會發亮、也會要命的地方。",
+ "他們沒有全部回來。但留下了一些話。",
+ "今天，先離開地面一公尺就好。",
+];
 const CAMPS=["第一營地","第二營地","第三營地"], STAY=14; // 每個營地至少停 14 秒才亮「往上」
 /* 每種心情：山的形狀（主稜）＋第一營地前的一句開場 */
 const MOODS={
@@ -263,6 +283,17 @@ function summit(){
 function toast(s){const t=$("#toast");t.textContent=s;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1800);}
 async function share(text){ if(navigator.share){try{await navigator.share({text});return;}catch(e){}} window.open("https://www.threads.net/intent/post?text="+encodeURIComponent(text),"_blank"); }
 const site=()=>location.href.split(/[?#]/)[0];
+
+/* 開場 */
+let introI=0;
+function introShow(){
+  const L=$("#intro-line"), A=$(".intro-acts"); L.classList.remove("in"); A.classList.remove("in");
+  setTimeout(()=>{L.textContent=INTRO[introI]; L.classList.add("in"); $("#b-intro-next").textContent=introI<INTRO.length-1?"下一句":"好"; },250);
+  setTimeout(()=>A.classList.add("in"),1600);
+}
+$("#b-intro-next").onclick=()=>{ introI++; if(introI>=INTRO.length){ show("#s-start"); } else introShow(); };
+$("#b-intro-skip").onclick=()=>show("#s-start");
+introShow();
 
 document.querySelectorAll(".mood").forEach(b=>b.addEventListener("click",()=>{
   mood=b.dataset.m; document.body.dataset.mood=mood; document.querySelector(".r1").setAttribute("d",MOODS[mood].ridge);
