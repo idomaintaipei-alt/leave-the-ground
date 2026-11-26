@@ -57,6 +57,13 @@ section.on{display:block}
 .intro-acts{display:flex;gap:10px;margin-top:28px;opacity:0;transition:opacity 1.2s ease .6s}
 .intro-acts.in{opacity:1}
 .btn.ghost{border-color:transparent;color:var(--ink2)}
+/* 風景 */
+.view-line{margin:38dvh 0 0;font-size:15px;letter-spacing:.3em;color:var(--ink2);opacity:0;transition:opacity 2.5s ease}
+.view-line.in{opacity:.8}
+.view-acts{opacity:0;transition:opacity 1.5s ease;pointer-events:none}
+.view-acts.in{opacity:1;pointer-events:auto}
+/* 留在這裡 */
+.stay-line{margin-top:26px;font-size:15.5px;line-height:2;color:var(--ink2)}
 h1{font-weight:300;font-size:30px;line-height:1.35;letter-spacing:.06em;margin:34px 0 10px}
 .lead{color:var(--ink2);font-size:14.5px;line-height:1.95;margin-bottom:26px}
 .lead b{color:var(--ink);font-weight:500}
@@ -151,8 +158,31 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
     <div class="drag sans">手指往上滑，也會往上。</div>
     <div class="acts">
       <button class="btn pri" id="b-up" disabled>往上</button>
-      <button class="btn" id="b-share">把這句分享到脆</button>
+      <button class="btn" id="b-share">把這句分享到 Threads</button>
       <a class="btn" id="b-book" href="#" target="_blank" rel="noopener">這本書</a>
+    </div>
+    <div class="acts"><button class="btn ghost" id="b-stay">今天到這裡就好</button></div>
+  </section>
+
+  <!-- 風景：營地之間，什麼都不做 -->
+  <section id="s-view" class="view">
+    <p class="view-line" id="view-line">不用做什麼。</p>
+    <div class="acts view-acts" id="view-acts">
+      <button class="btn pri" id="b-view-go">好了，往上</button>
+      <button class="btn ghost" id="b-view-stay">今天到這裡就好</button>
+    </div>
+  </section>
+
+  <!-- 留在這裡：不攻頂 -->
+  <section id="s-stay" class="stay">
+    <div class="camp-tag sans" id="stay-tag"></div>
+    <p class="q in" id="stay-q"></p>
+    <div class="src in" id="stay-src"></div>
+    <p class="stay-line">今天到這裡。<br>山還在，書也還在，下次再來。</p>
+    <div class="acts">
+      <button class="btn" id="b-stay-share">把這句分享到 Threads</button>
+      <a class="btn" id="b-stay-book" href="#" target="_blank" rel="noopener">這本書</a>
+      <button class="btn ghost" id="b-stay-again">改天再爬</button>
     </div>
   </section>
 
@@ -162,7 +192,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
     <div class="recap" id="recap"></div>
     <div class="acts">
       <button class="btn pri" id="b-again">再爬一次</button>
-      <button class="btn" id="b-share2">把今天分享到脆</button>
+      <button class="btn" id="b-share2">把今天分享到 Threads</button>
     </div>
     <footer>引句取自臉譜出版「meters 山岳文學書系」各書中文版的書介、導讀與書名；書系由詹偉雄策畫．選書．導讀，2020–2024 共十本。這個網頁是一個讀者做的，與出版社無關。</footer>
   </section>
@@ -281,7 +311,42 @@ function summit(){
   show("#s-summit");
 }
 function toast(s){const t=$("#toast");t.textContent=s;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1800);}
-async function share(text){ if(navigator.share){try{await navigator.share({text});return;}catch(e){}} window.open("https://www.threads.net/intent/post?text="+encodeURIComponent(text),"_blank"); }
+/* 畫一張分享卡：天色照心情、山稜、那句話、出處、網址（1080×1350） */
+async function makeCard(q){
+  try{ await document.fonts.load('500 60px "Noto Serif TC"'); await document.fonts.load('300 30px "Noto Sans TC"'); }catch(_){}
+  const W=1080,H=1350,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+  const cs=getComputedStyle(document.body), v=n=>cs.getPropertyValue(n).trim();
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,v("--sky0"));g.addColorStop(.7,v("--sky1"));g.addColorStop(1,v("--sky2"));x.fillStyle=g;x.fillRect(0,0,W,H);
+  // 星
+  let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
+  for(let i=0;i<220;i++){x.globalAlpha=.25+rnd()*.6;x.fillStyle="#e9e4d8";x.beginPath();x.arc(rnd()*W,rnd()*H*.55,.6+rnd()*1.8,0,6.28);x.fill();}
+  x.globalAlpha=1;
+  // 山（三層，主稜用目前心情的形狀）
+  const layers=[[v("--m1"),document.querySelector(".r1").getAttribute("d")],[v("--m2"),document.querySelector(".r2").getAttribute("d")],[v("--m3"),document.querySelector(".r3").getAttribute("d")]];
+  const top=H*.60, sh=H-top;
+  for(const [col,d] of layers){x.fillStyle=col;x.beginPath();const seg=d.match(/[ML][^MLZ]+/g);for(const s of seg){const [px,py]=s.slice(1).trim().split(",").map(Number);const X=px/1000*W,Y=top+py/420*sh;s[0]==="M"?x.moveTo(X,Y):x.lineTo(X,Y);}x.closePath();x.fill();}
+  // 文字
+  const ink="#e9e4d8",ember=v("--ember");
+  x.fillStyle=ember;x.font='300 26px "Noto Sans TC"';x.textBaseline="top";
+  const bk=q.b?BOOKS[q.b]:null; x.fillText((bk?`METERS ${String(q.b).padStart(2,"0")}　${bk.t}`:"METERS　書系總序"),96,120);
+  x.fillStyle=ink;x.font='500 58px "Noto Serif TC"';
+  const chars=[...("「"+q.q+"」")];let line="",y=200,maxW=W-192;
+  for(const ch of chars){const t=line+ch;if(x.measureText(t).width>maxW&&!/[」。，！？…]/.test(ch)){x.fillText(line,96,y);y+=96;line=ch;}else line=t;}
+  x.fillText(line,96,y);y+=130;
+  x.fillStyle="#a8b3bf";x.font='300 28px "Noto Sans TC"';
+  const src=(bk?`《${bk.t}》${bk.a}　｜　`:"")+q.by; x.fillText(src,96,y);
+  x.fillStyle="#a8b3bf";x.font='300 24px "Noto Sans TC"';x.fillText("離開地面　"+site().replace(/^https?:\/\//,""),96,H-80);
+  return new Promise(res=>c.toBlob(res,"image/png"));
+}
+async function share(text,withCard){
+  let files=[];
+  if(withCard&&cur){ try{const b=await makeCard(cur); if(b) files=[new File([b],"leave-the-ground.png",{type:"image/png"})];}catch(_){} }
+  if(navigator.share){
+    try{ if(files.length&&navigator.canShare&&navigator.canShare({files})) {await navigator.share({text,files});return;} await navigator.share({text});return; }catch(e){ if(e&&e.name==="AbortError") return; }
+  }
+  if(files.length){ const a=document.createElement("a");a.href=URL.createObjectURL(files[0]);a.download="leave-the-ground.png";a.click(); toast("圖片已存下，貼文時附上"); }
+  window.open("https://www.threads.net/intent/post?text="+encodeURIComponent(text),"_blank");
+}
 const site=()=>location.href.split(/[?#]/)[0];
 
 /* 開場 */
@@ -305,8 +370,33 @@ document.querySelectorAll(".mood").forEach(b=>b.addEventListener("click",()=>{
  addEventListener("pointermove",e=>{if(y0===null||!on()) return; const dy=y0-e.clientY; if(dy>0){dragBonus+=dy*0.02; y0=e.clientY;}});
  addEventListener("pointerup",()=>{y0=null;}); addEventListener("pointercancel",()=>{y0=null;});
 })();
-$("#b-up").onclick=()=>{ step++; if(step>=3) summit(); else camp(); };
-$("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`);};
+/* 風景：營地之間，高度不動，十秒後才能往上 */
+let viewT=null;
+function view(){
+  clearInterval(timer);
+  $("#view-line").classList.remove("in"); $("#view-acts").classList.remove("in");
+  show("#s-view");
+  setTimeout(()=>$("#view-line").classList.add("in"),1200);
+  clearTimeout(viewT); viewT=setTimeout(()=>$("#view-acts").classList.add("in"),10000);
+}
+/* 留在這裡：不攻頂，不結算 */
+function stay(){
+  clearInterval(timer); clearTimeout(viewT);
+  const bk=cur&&cur.b?BOOKS[cur.b]:null;
+  $("#stay-tag").textContent=CAMPS[step]+"　"+alt.toLocaleString()+" m";
+  $("#stay-q").textContent=cur?cur.q:"";
+  $("#stay-src").innerHTML=bk?`<b>《${bk.t}：${bk.s}》</b>　${bk.a}　｜　${cur.by}`:(cur?cur.by:"");
+  const bb=$("#b-stay-book"); if(bk){bb.style.display="";bb.href=bk.u;} else bb.style.display="none";
+  bars.forEach((b,i)=>{b.classList.toggle("done",i<=step);b.classList.remove("now");});
+  show("#s-stay");
+}
+$("#b-up").onclick=()=>{ step++; if(step>=3) summit(); else view(); };
+$("#b-view-go").onclick=()=>camp();
+$("#b-view-stay").onclick=()=>stay();
+$("#b-stay").onclick=()=>stay();
+$("#b-stay-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n今天到這裡就好。\n${site()}`,true);};
+$("#b-stay-again").onclick=()=>$("#b-again").onclick();
+$("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true);};
 $("#b-share2").onclick=()=>share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n十本山岳文學，一次一句。\n${site()}`);
 $("#b-again").onclick=()=>{clearInterval(timer);alt=0;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
 
