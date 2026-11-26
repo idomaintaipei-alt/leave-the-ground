@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>離開地面｜三句話，三個營地</title>
+<meta name="description" content="挫折的時候，先離開地面一公尺。三句山岳文學的話，三個營地，停留就是上升。">
+<meta property="og:title" content="離開地面｜三句話，三個營地">
+<meta property="og:description" content="你現在在哪裡？點一個，山會帶你上去。">
+<meta name="theme-color" content="#0e1620">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;500;700&family=Noto+Sans+TC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--sky0:#0e1620;--sky1:#1b2a3a;--sky2:#2a3a4a;--ink:#e9e4d8;--ink2:#a8b3bf;--ember:#d98b5f;--line:rgba(233,228,216,.18);--m1:#223447;--m2:#1a2a3b;--m3:#131f2c}
+/* 每種心情一種天色 */
+body[data-mood=stuck]{--sky0:#0b0f14;--sky1:#161c24;--sky2:#2a2f36;--ember:#c97a4f;--m1:#1f262e;--m2:#171d24;--m3:#0f1419}
+body[data-mood=tired]{--sky0:#141a2a;--sky1:#23304a;--sky2:#3a4a63;--ember:#d9a16a;--m1:#2a3650;--m2:#202a40;--m3:#161e2e}
+body[data-mood=lost]{--sky0:#10171a;--sky1:#1c2a2c;--sky2:#2e4144;--ember:#c9a05a;--m1:#223538;--m2:#1a2a2c;--m3:#121e20}
+body[data-mood=quit]{--sky0:#160f12;--sky1:#2a1b22;--sky2:#3e2a33;--ember:#d96c5f;--m1:#352430;--m2:#281a24;--m3:#1b1118}
+body[data-mood=any]{--sky0:#0e1a2a;--sky1:#1b3350;--sky2:#2f5070;--ember:#e0b06a;--m1:#244060;--m2:#1a3050;--m3:#122238}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Noto Serif TC","Noto Serif CJK TC","PMingLiU",serif;color:var(--ink);
+  background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 70%,var(--sky2) 100%);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background 2s}
+.r1{fill:var(--m1)}.r2{fill:var(--m2)}.r3{fill:var(--m3)}
+.r1,.r2,.r3{transition:fill 2s,d 2s}
+.sans{font-family:"Noto Sans TC","Noto Sans CJK TC","Microsoft JhengHei",sans-serif}
+#stars{position:fixed;inset:0;pointer-events:none}
+#mtn{position:fixed;left:0;right:0;bottom:0;height:44dvh;pointer-events:none;transition:transform 2.5s cubic-bezier(.2,.7,.2,1)}
+#mtn svg{width:100%;height:100%;display:block}
+.snow{fill:#e9e4d8;opacity:0;transition:opacity 2s}
+main{touch-action:pan-y}
+.drag{margin-top:10px;font-size:12px;letter-spacing:.2em;color:var(--ink2);opacity:.6}
+body.high .snow{opacity:.85}
+
+main{position:relative;z-index:2;max-width:520px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 22px 42dvh}
+header{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0 16px;border-bottom:1px solid var(--line)}
+header .k{font-size:12px;letter-spacing:.35em;color:var(--ink2)}
+#alt{font-variant-numeric:tabular-nums;font-size:13px;letter-spacing:.12em;color:var(--ink2)}
+#alt b{color:var(--ink);font-weight:500;font-size:18px;margin-right:2px}
+
+/* 營地進度 */
+.camps{display:flex;gap:6px;align-items:center;margin:14px 0 0;font-size:11px;letter-spacing:.2em;color:var(--ink2)}
+.camps i{display:block;height:2px;flex:1;background:var(--line);border-radius:2px;position:relative;overflow:hidden}
+.camps i::after{content:"";position:absolute;inset:0;background:var(--ember);transform:scaleX(0);transform-origin:left;transition:transform .6s}
+.camps i.done::after{transform:scaleX(1)}
+.camps i.now::after{transform:scaleX(var(--p,0));transition:transform .4s linear}
+
+section{display:none;animation:up .9s ease both}
+section.on{display:block}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+h1{font-weight:300;font-size:30px;line-height:1.35;letter-spacing:.06em;margin:34px 0 10px}
+.lead{color:var(--ink2);font-size:14.5px;line-height:1.95;margin-bottom:26px}
+.lead b{color:var(--ink);font-weight:500}
+.moods{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mood{appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);padding:20px 14px;border-radius:14px;
+  font-family:inherit;font-size:17px;letter-spacing:.08em;cursor:pointer;transition:background .25s,transform .15s,border-color .25s;text-align:left;line-height:1.5}
+.mood small{display:block;color:var(--ink2);font-size:12px;letter-spacing:.05em;margin-top:4px}
+.mood:hover{background:rgba(255,255,255,.07);border-color:rgba(233,228,216,.4)}
+.mood:active{transform:scale(.98)}
+.mood.wide{grid-column:1/-1;text-align:center}
+
+/* 營地：一句話 */
+.camp-tag{margin-top:30px;font-size:12px;letter-spacing:.3em;color:var(--ember)}
+.q{margin-top:16px;font-size:27px;line-height:1.75;font-weight:500;letter-spacing:.04em;text-wrap:balance;opacity:0;transition:opacity 2.2s ease}
+.q.in{opacity:1}
+.q::before{content:"「";color:var(--ember);margin-left:-.5em}
+.q::after{content:"」";color:var(--ember)}
+.src{margin-top:18px;font-size:13px;line-height:1.8;color:var(--ink2);opacity:0;transition:opacity 1.6s ease}
+.src.in{opacity:1}
+.src b{color:var(--ink);font-weight:500}
+.why{margin-top:22px;font-size:15.5px;line-height:2;color:var(--ink);opacity:0;transition:opacity 1.8s ease}
+.why.in{opacity:1}
+.ask{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:15.5px;line-height:1.9;color:var(--ember);opacity:0;transition:opacity 1.8s ease}
+.ask.in{opacity:1}
+.hint{margin-top:26px;font-size:12px;letter-spacing:.2em;color:var(--ink2);opacity:.75}
+.acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.btn{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:12px 18px;font-family:inherit;font-size:15px;letter-spacing:.08em;cursor:pointer;transition:background .25s,opacity .6s}
+.btn:hover{background:rgba(255,255,255,.08)}
+.btn.pri{background:var(--ink);color:var(--sky0);border-color:var(--ink)}
+.btn.pri:hover{background:#fff}
+.btn[disabled]{opacity:.25;cursor:default}
+a.btn{text-decoration:none;display:inline-block}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--sky0);padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;transition:.3s;z-index:9;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 山頂 */
+.summit h1{font-size:26px}
+.recap{margin-top:18px;border-top:1px solid var(--line)}
+.recap div{padding:14px 0;border-bottom:1px solid var(--line)}
+.recap .rq{font-size:16px;line-height:1.75}
+.recap a{display:block;margin-top:6px;font-size:12.5px;color:var(--ink2);text-decoration:none;letter-spacing:.05em}
+.recap a span{color:var(--ember);margin-right:6px}
+footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-spacing:.05em}
+@media (min-width:600px){.q{font-size:31px}h1{font-size:34px}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div id="mtn" aria-hidden="true">
+  <svg viewBox="0 0 1000 420" preserveAspectRatio="none">
+    <path class="r1" d="M0,420 L0,300 L80,250 L150,290 L240,170 L300,230 L380,120 L430,180 L520,90 L600,190 L680,140 L760,220 L840,160 L920,240 L1000,200 L1000,420 Z"/>
+    <path class="snow" d="M380,120 L360,150 L400,145 Z M520,90 L498,128 L545,122 Z"/>
+    <path class="r2" d="M0,420 L0,340 L120,300 L200,330 L290,260 L360,300 L450,230 L540,290 L640,240 L720,300 L800,260 L900,320 L1000,290 L1000,420 Z"/>
+    <path class="r3" d="M0,420 L0,380 L140,350 L260,375 L370,330 L480,365 L590,320 L700,360 L820,335 L920,370 L1000,350 L1000,420 Z"/>
+  </svg>
+</div>
+
+<main>
+  <header>
+    <div class="k sans">離開地面　LEAVE THE GROUND</div>
+    <div id="alt" class="sans"><b>0</b>m</div>
+  </header>
+  <div class="camps sans" id="camps"><span>地面</span><i></i><span>一</span><i></i><span>二</span><i></i><span>三</span><i></i><span>山頂</span></div>
+
+  <section id="s-start" class="on">
+    <h1>你現在<br>在哪裡？</h1>
+    <p class="lead">不用回答別人，點一個就好。<br><b>三句話，三個營地。</b>每一句，字會慢慢出現；<br>你停留多久，就往上多少。不用急。</p>
+    <div class="moods">
+      <button class="mood" data-m="stuck">撐不下去<small>每一步都好重</small></button>
+      <button class="mood" data-m="tired">很累<small>不是身體，是心</small></button>
+      <button class="mood" data-m="lost">迷路了<small>不知道為什麼要繼續</small></button>
+      <button class="mood" data-m="quit">想放棄<small>覺得終點不值得</small></button>
+      <button class="mood wide" data-m="any">還行，只是想看看山</button>
+    </div>
+  </section>
+
+  <section id="s-camp">
+    <div class="camp-tag sans" id="camp-tag"></div>
+    <p class="q" id="q-text"></p>
+    <div class="src" id="q-src"></div>
+    <p class="why" id="q-why"></p>
+    <p class="ask" id="q-ask"></p>
+    <div class="hint sans" id="hint">字還在出現，先讀。</div>
+    <div class="drag sans">手指往上滑，也會往上。</div>
+    <div class="acts">
+      <button class="btn pri" id="b-up" disabled>往上</button>
+      <button class="btn" id="b-share">把這句分享到脆</button>
+      <a class="btn" id="b-book" href="#" target="_blank" rel="noopener">這本書</a>
+    </div>
+  </section>
+
+  <section id="s-summit" class="summit">
+    <h1 id="summit-h"></h1>
+    <p class="lead" id="summit-lead"></p>
+    <div class="recap" id="recap"></div>
+    <div class="acts">
+      <button class="btn pri" id="b-again">再爬一次</button>
+      <button class="btn" id="b-share2">把今天分享到脆</button>
+    </div>
+    <footer>引句取自臉譜出版「meters 山岳文學書系」各書中文版的書介、導讀與書名；書系由詹偉雄策畫．選書．導讀，2020–2024 共十本。這個網頁是一個讀者做的，與出版社無關。</footer>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const BOOKS={
+ 1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
+ 2:{t:"我的山間初夏",s:"國家公園之父約翰．繆爾的啟蒙手記",a:"約翰．繆爾",u:"https://www.books.com.tw/products/0011043447"},
+ 3:{t:"攀向自由",s:"波蘭冰峰戰士們的一頁鐵血史詩",a:"柏娜黛．麥當勞",u:"https://readmoo.com/book/210167092000101"},
+ 4:{t:"靈魂的征途",s:"安娜普納南壁",a:"克里斯．鮑寧頓",u:"https://readmoo.com/book/210180619000101"},
+ 5:{t:"攀登的奧義",s:"從馬洛里、尼采到齊美爾的歐洲山岳思想選粹",a:"詹偉雄 選編",u:"https://www.books.com.tw/products/0011045488"},
+ 6:{t:"殘暴之巔",s:"K2 女子先鋒的生死經歷",a:"珍妮佛．喬登",u:"https://readmoo.com/book/210227923000101"},
+ 7:{t:"靜謐的榮光",s:"馬洛里、大英帝國與聖母峰之一頁史詩",a:"韋德．戴維斯",u:"https://readmoo.com/book/210258001000101"},
+ 8:{t:"野蠻競技場",s:"年輕的心與困難的山之最後告白",a:"喬．塔斯克",u:"https://readmoo.com/book/210279602000101"},
+ 9:{t:"寧為一日猛虎",s:"艾利克斯．麥金泰爾與他的生命之山",a:"約翰．波特",u:"https://www.books.com.tw/products/0010986286"},
+ 10:{t:"餵鼠",s:"一種老派登山家風範",a:"艾爾．艾佛瑞茲",u:"https://readmoo.com/book/210337502000101"},
+};
+/* q 引句（書介／導讀／書名裡的短句）  why 一段白話  ask 留給讀者的問題 */
+const QUOTES=[
+ {b:9,m:["quit","stuck"],q:"寧為一日猛虎，不作千年馴羊。",by:"圖博古諺，麥金泰爾母親選作他紀念碑上的題詞",
+  why:"艾利克斯．麥金泰爾二十八歲死在安娜普納南壁，被一顆落石擊中。他媽媽把這句話刻在碑上。不是叫你去送死，是說：活得像自己，哪怕只有一天。",ask:"你有哪一天，是像自己活的？"},
+ {b:9,m:["quit","lost"],q:"一樁恐懼死亡的人生，應該是永遠都還沒活過的人生吧！",by:"詹偉雄導讀",
+  why:"怕失敗、怕出糗、怕輸，怕到最後什麼都沒開始。這句話不是在逼你，是在問你。",ask:"你最近一次，因為怕而沒開始的事，是什麼？"},
+ {b:8,m:["quit","tired"],q:"我們之所以以身犯險，只是因為我們覺得那個終點值得。",by:"詹偉雄導讀",
+  why:"喬．塔斯克交完書稿就去了聖母峰，沒有回來。他不知道那是最後一本。",ask:"你現在撐的這件事，終點值得嗎？值得，就再走一步；不值得，放下也是一種勇氣。"},
+ {b:4,m:["lost","any","stuck"],q:"每個人心中，都有一座他的安娜普納！",by:"詹偉雄導讀標題",
+  why:"一九七〇年，二十一個人花了整整兩個月，爬一面沒人爬過的牆。成功了，然後最後一章叫「悲劇」。兩件事可以同時是真的。",ask:"你的那面牆，是什麼？不用很大，是你自己的就好。"},
+ {b:3,m:["stuck","tired"],q:"要想獲得勇氣，必須求之在我。",by:"《攀向自由》推薦序標題",
+  why:"波蘭登山家窮到衣服自己縫、冰斧請鐵匠打，還是去了喜馬拉雅，在冬天爬八千公尺的山。勇氣不是別人給的。",ask:"你現在的限制，有沒有可能，其實是你的材料？"},
+ {b:10,m:["lost","any"],q:"攀登不為什麼，只為了餵養心中的那一隻老鼠。",by:"中文版書介",
+  why:"西方登山家說，心裡有一隻無形的老鼠，要不斷餵牠。莫．安東尼不出名、不靠登山吃飯，每年夏天就是去。",ask:"你心裡那隻老鼠，最近餵了嗎？"},
+ {b:10,m:["tired","lost"],q:"攀登才沒那麼多名堂。",by:"《餵鼠》推薦序標題",
+  why:"有些事不用理由，也不用給別人交代。去做就好。",ask:"有沒有一件事，你做它只是因為想做？"},
+ {b:10,m:["stuck","tired"],q:"你墜落了，你辯證了，你澄明了……",by:"《餵鼠》導讀標題",
+  why:"跌下來不是結束，是看清楚的開始。",ask:"這一跤，讓你看清楚了什麼？"},
+ {b:7,m:["quit","any"],q:"死亡之前，要過足人生。",by:"詹偉雄導讀標題",
+  why:"馬洛里一九二四年消失在聖母峰上。一百年後，大家問的不是他有沒有登頂，而是他為什麼走下去。",ask:"如果不問結果，你現在走的路，你還想走嗎？"},
+ {b:6,m:["stuck","tired"],q:"或許山並不在乎她們的性別，但人類社會在乎。",by:"詹偉雄導讀",
+  why:"最早登上 K2 的五個女人，被山考驗一次，又被人考驗一次。她們還是去了。",ask:"你扛著、別人看不到的那一層，是什麼？"},
+ {b:5,m:["any","lost"],q:"讓讀者的靈魂──變大一點。",by:"詹偉雄",
+  why:"他說這本書不一定讓你更聰明、更會爬山，但靈魂會變大一點。你今天需要的，可能就是這一點。",ask:"今天有沒有哪一刻，你覺得自己大了一點？"},
+ {b:5,m:["stuck"],q:"要像花崗岩一樣原始、堅強有力。",by:"《攀登的奧義》封面語，引尼采",
+  why:"岩石不解釋自己。你也不用。",ask:"有什麼事，你其實不用再跟任何人解釋了？"},
+ {b:1,m:["lost","any"],q:"探索、美與危險，隱隱然是青春的三支意義角柱。",by:"詹偉雄導讀",
+  why:"兩個二十幾歲的英國人，花四十天爬一面會發亮的牆。青春不是年紀，是你還願不願意探索。",ask:"你上一次把自己放到一個沒把握的地方，是什麼時候？"},
+ {b:2,m:["tired","any"],q:"赤子之心，不免澎湃。",by:"詹偉雄導讀標題",
+  why:"繆爾差點瞎掉，後來跟著羊群走進山裡，一整個夏天都在驚嘆。累的時候，去看一棵樹。",ask:"今天，你有沒有認真看過任何一樣東西，超過一分鐘？"},
+ {b:0,m:["any","lost","tired","stuck","quit"],q:"離開地面，是永恆的現代性。",by:"詹偉雄，meters 書系總序",
+  why:"這套書的第一句話。不用爬山，離開地面一公尺就好：關掉手機、走出門、抬頭。",ask:"現在，離開地面一公尺，你會做什麼？"},
+];
+
+const CAMPS=["第一營地","第二營地","第三營地"], STAY=14; // 每個營地至少停 14 秒才亮「往上」
+/* 每種心情：山的形狀（主稜）＋第一營地前的一句開場 */
+const MOODS={
+ stuck:{ridge:"M0,420 L0,330 L90,300 L170,320 L260,240 L330,280 L420,200 L480,250 L560,180 L640,240 L720,210 L800,270 L880,230 L1000,260 L1000,420 Z",open:"先不用往上。坐一下。"},
+ tired:{ridge:"M0,420 L0,310 L100,280 L190,300 L280,230 L360,260 L450,190 L530,230 L610,170 L700,220 L780,190 L860,240 L940,210 L1000,230 L1000,420 Z",open:"累的話，字會慢一點。"},
+ lost: {ridge:"M0,420 L0,300 L70,260 L140,290 L220,200 L290,250 L370,150 L440,210 L520,120 L590,200 L660,160 L740,230 L820,170 L900,240 L1000,210 L1000,420 Z",open:"迷路的人，通常都還在路上。"},
+ quit: {ridge:"M0,420 L0,290 L80,240 L160,280 L240,160 L310,220 L390,100 L450,170 L540,80 L620,180 L690,130 L770,210 L850,150 L930,230 L1000,190 L1000,420 Z",open:"放棄之前，先聽一個人講他為什麼沒放棄。"},
+ any:  {ridge:"M0,420 L0,300 L80,250 L150,290 L240,170 L300,230 L380,120 L430,180 L520,90 L600,190 L680,140 L760,220 L840,160 L920,240 L1000,200 L1000,420 Z",open:"好，我們慢慢走。"},
+};
+let mood="any", alt=0, used=new Set(), step=0, cur=null, picked=[], timer=null, t0=0, dragBonus=0;
+const $=s=>document.querySelector(s), altEl=$("#alt b"), mtn=$("#mtn"), bars=[...document.querySelectorAll("#camps i")];
+
+function pick(){
+  let pool=QUOTES.filter((q,i)=>!used.has(i)&&(mood==="any"||q.m.includes(mood)));
+  if(!pool.length) pool=QUOTES.filter((q,i)=>!used.has(i));
+  const q=pool[Math.floor(Math.random()*pool.length)]; used.add(QUOTES.indexOf(q)); return q;
+}
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));const el=$(id);el.classList.add("on");el.style.animation="none";el.offsetHeight;el.style.animation="";window.scrollTo({top:0,behavior:"smooth"});}
+function setAlt(v){altEl.textContent=Math.round(v).toLocaleString();}
+
+function camp(){
+  cur=pick(); picked.push(cur);
+  const bk=cur.b?BOOKS[cur.b]:null;
+  $("#camp-tag").textContent=(step===0?MOODS[mood].open+"　　":"")+CAMPS[step]+"　"+(bk?`METERS ${String(cur.b).padStart(2,"0")}`:"METERS 總序");
+  $("#q-text").textContent=cur.q;
+  $("#q-src").innerHTML=bk?`<b>《${bk.t}：${bk.s}》</b>　${bk.a}　｜　${cur.by}`:cur.by;
+  $("#q-why").textContent=cur.why; $("#q-ask").textContent=cur.ask;
+  const bb=$("#b-book"); if(bk){bb.style.display="";bb.href=bk.u;}else bb.style.display="none";
+  ["#q-text","#q-src","#q-why","#q-ask"].forEach(s=>$(s).classList.remove("in"));
+  const up=$("#b-up"); up.disabled=true; up.textContent="往上"; $("#hint").textContent="字還在出現，先讀。";
+  show("#s-camp");
+  setTimeout(()=>$("#q-text").classList.add("in"),200);
+  setTimeout(()=>$("#q-src").classList.add("in"),2600);
+  setTimeout(()=>$("#q-why").classList.add("in"),4800);
+  setTimeout(()=>$("#q-ask").classList.add("in"),8000);
+  // 停留＝上升
+  bars.forEach((b,i)=>{b.classList.toggle("done",i<step);b.classList.toggle("now",i===step);b.style.setProperty("--p",0);});
+  const base=alt, gain=600+Math.floor(Math.random()*300); t0=performance.now(); dragBonus=0;
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    const s=(performance.now()-t0)/1000+dragBonus, k=Math.min(1,s/STAY);
+    setAlt(base+gain*k); bars[step].style.setProperty("--p",k);
+    if(k>=1){ alt=base+gain; up.disabled=false; $("#hint").textContent="讀完了，再往上。或者，再多停一下也可以。"; clearInterval(timer); }
+    else if(s>8){ $("#hint").textContent="還有一個問題，留給你。"; }
+    mtn.style.transform=`translateY(${-(step*18+18*k)}px) scale(${1+(step+k)*0.04})`;
+    document.body.classList.toggle("high",base+gain*k>1500);
+  },100);
+}
+function summit(){
+  bars.forEach(b=>{b.classList.add("done");b.classList.remove("now");});
+  $("#summit-h").textContent=`你到山頂了。`;
+  $("#summit-lead").innerHTML=`今天你離開地面 <b>${alt.toLocaleString()}</b> 公尺，帶走三句話。<br>哪一句停住了你，就從那本書開始。`;
+  const R=$("#recap"); R.innerHTML="";
+  picked.forEach(q=>{const bk=q.b?BOOKS[q.b]:null; const d=document.createElement("div");
+    d.innerHTML=`<div class="rq">「${q.q}」</div>`+(bk?`<a href="${bk.u}" target="_blank" rel="noopener"><span>${String(q.b).padStart(2,"0")}</span>《${bk.t}》${bk.s}</a>`:`<a><span>00</span>meters 書系總序</a>`);
+    R.appendChild(d);});
+  show("#s-summit");
+}
+function toast(s){const t=$("#toast");t.textContent=s;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1800);}
+async function share(text){ if(navigator.share){try{await navigator.share({text});return;}catch(e){}} window.open("https://www.threads.net/intent/post?text="+encodeURIComponent(text),"_blank"); }
+const site=()=>location.href.split(/[?#]/)[0];
+
+document.querySelectorAll(".mood").forEach(b=>b.addEventListener("click",()=>{
+  mood=b.dataset.m; document.body.dataset.mood=mood; document.querySelector(".r1").setAttribute("d",MOODS[mood].ridge);
+  step=0;alt=0;used.clear();picked=[];camp();}));
+/* 手指往上滑＝往上爬（只在營地畫面；每滑 1 像素算 0.02 秒） */
+(function(){let y0=null;
+ const on=()=>$("#s-camp").classList.contains("on");
+ addEventListener("pointerdown",e=>{if(on()) y0=e.clientY;});
+ addEventListener("pointermove",e=>{if(y0===null||!on()) return; const dy=y0-e.clientY; if(dy>0){dragBonus+=dy*0.02; y0=e.clientY;}});
+ addEventListener("pointerup",()=>{y0=null;}); addEventListener("pointercancel",()=>{y0=null;});
+})();
+$("#b-up").onclick=()=>{ step++; if(step>=3) summit(); else camp(); };
+$("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`);};
+$("#b-share2").onclick=()=>share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n十本山岳文學，一次一句。\n${site()}`);
+$("#b-again").onclick=()=>{clearInterval(timer);alt=0;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
+
+(function(){const c=$("#stars"),x=c.getContext("2d");let W,H,S=[];
+ function rs(){W=c.width=innerWidth*devicePixelRatio;H=c.height=innerHeight*devicePixelRatio;S=[];for(let i=0;i<140;i++)S.push({x:Math.random()*W,y:Math.random()*H*.6,r:Math.random()*1.3*devicePixelRatio+.3,p:Math.random()*6.28});}
+ function dr(t){x.clearRect(0,0,W,H);for(const s of S){x.globalAlpha=.35+.45*Math.sin(t/900+s.p);x.fillStyle="#e9e4d8";x.beginPath();x.arc(s.x,s.y,s.r,0,6.28);x.fill();}requestAnimationFrame(dr);}
+ addEventListener("resize",rs);rs();requestAnimationFrame(dr);})();
+</script>
+</body>
+</html>
