@@ -123,7 +123,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 
 <main>
   <header>
-    <div class="k sans">離開地面　LEAVE THE GROUND</div>
+    <div class="k sans" id="skyname">離開地面　LEAVE THE GROUND</div>
     <div id="alt" class="sans"><b>0</b>m</div>
   </header>
   <div class="camps sans" id="camps"><span>地面</span><i></i><span>一</span><i></i><span>二</span><i></i><span>三</span><i></i><span>山頂</span></div>
@@ -361,7 +361,7 @@ $("#b-intro-skip").onclick=()=>show("#s-start");
 introShow();
 
 document.querySelectorAll(".mood").forEach(b=>b.addEventListener("click",()=>{
-  mood=b.dataset.m; document.body.dataset.mood=mood; document.querySelector(".r1").setAttribute("d",MOODS[mood].ridge);
+  mood=b.dataset.m; document.body.dataset.mood=mood; document.querySelector(".r1").setAttribute("d",MOODS[mood].ridge); applySky();
   step=0;alt=0;used.clear();picked=[];camp();}));
 /* 手指往上滑＝往上爬（只在營地畫面；每滑 1 像素算 0.02 秒） */
 (function(){let y0=null;
@@ -398,7 +398,7 @@ $("#b-stay-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cu
 $("#b-stay-again").onclick=()=>$("#b-again").onclick();
 $("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true);};
 $("#b-share2").onclick=()=>share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n十本山岳文學，一次一句。\n${site()}`);
-$("#b-again").onclick=()=>{clearInterval(timer);alt=0;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
+$("#b-again").onclick=()=>{clearInterval(timer);alt=0;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;applySky();bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
 
 /* 自動抓新版：比對伺服器上的 ETag，不一樣就重新載入一次（朋友只要重新整理或重開就會拿到最新版） */
 (async()=>{try{
@@ -407,9 +407,42 @@ $("#b-again").onclick=()=>{clearInterval(timer);alt=0;step=0;used.clear();picked
   if(old && old!==e && !sessionStorage.getItem("ltg-reloaded")){ sessionStorage.setItem("ltg-reloaded","1"); location.reload(); }
   else sessionStorage.removeItem("ltg-reloaded");
 }catch(_){}})();
+/* ---------- 山是活的：真實時間決定天色，心情只是染一層 ---------- */
+const TIMES=[ // [起始小時, 天頂, 中段, 地平線, 星星亮度, 名字]
+ [0,  "#060a0f","#0e151f","#182230",1.0,"深夜"],
+ [4.5,"#0f1322","#2b2a46","#6a4852",0.6,"黎明"],
+ [6.5,"#182c46","#2e5a84","#7c9fba",0.15,"清晨"],
+ [9,  "#1d3b60","#3870a3","#98bad3",0.04,"白天"],
+ [16, "#223858","#49597d","#ad7e5f",0.10,"傍晚"],
+ [18, "#13162a","#39233f","#884938",0.45,"黃昏"],
+ [19.5,"#090d17","#151c2b","#25303f",0.9,"夜"],
+];
+let starAlpha=1;
+const hex2=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const mix=(a,b,k)=>{const A=hex2(a),B=hex2(b);return "#"+A.map((v,i)=>Math.round(v+(B[i]-v)*k).toString(16).padStart(2,"0")).join("");};
+function timeSky(){
+  const d=new Date(), h=d.getHours()+d.getMinutes()/60;
+  let i=TIMES.length-1; for(let j=0;j<TIMES.length;j++) if(h>=TIMES[j][0]) i=j;
+  const a=TIMES[i], b=TIMES[(i+1)%TIMES.length]; const end=(i+1<TIMES.length)?b[0]:24;
+  const k=Math.min(1,Math.max(0,(h-a[0])/Math.max(.01,end-a[0])));
+  const sky=[1,2,3].map(n=>mix(a[n],b[n],k)); starAlpha=a[4]+(b[4]-a[4])*k;
+  return {sky,name:a[5],hhmm:d.toTimeString().slice(0,5)};
+}
+function applySky(){
+  const t=timeSky();
+  // 心情的色只染 35%，其餘跟著真實時間
+  const m=document.body.dataset.mood; const base=m?MOODSKY[m]:MOODSKY.none;
+  document.body.style.setProperty("--sky0",mix(t.sky[0],base[0],.35));
+  document.body.style.setProperty("--sky1",mix(t.sky[1],base[1],.35));
+  document.body.style.setProperty("--sky2",mix(t.sky[2],base[2],.35));
+  $("#skyname").textContent=`${t.name} ${t.hhmm} 的山`;
+}
+const MOODSKY={none:["#0e1620","#1b2a3a","#2a3a4a"],stuck:["#0b0f14","#161c24","#2a2f36"],tired:["#141a2a","#23304a","#3a4a63"],lost:["#10171a","#1c2a2c","#2e4144"],quit:["#160f12","#2a1b22","#3e2a33"],any:["#0e1a2a","#1b3350","#2f5070"]};
+applySky(); setInterval(applySky,60000);
+
 (function(){const c=$("#stars"),x=c.getContext("2d");let W,H,S=[];
  function rs(){W=c.width=innerWidth*devicePixelRatio;H=c.height=innerHeight*devicePixelRatio;S=[];for(let i=0;i<140;i++)S.push({x:Math.random()*W,y:Math.random()*H*.6,r:Math.random()*1.3*devicePixelRatio+.3,p:Math.random()*6.28});}
- function dr(t){x.clearRect(0,0,W,H);for(const s of S){x.globalAlpha=.35+.45*Math.sin(t/900+s.p);x.fillStyle="#e9e4d8";x.beginPath();x.arc(s.x,s.y,s.r,0,6.28);x.fill();}requestAnimationFrame(dr);}
+ function dr(t){x.clearRect(0,0,W,H);for(const s of S){x.globalAlpha=(.35+.45*Math.sin(t/900+s.p))*starAlpha;x.fillStyle="#e9e4d8";x.beginPath();x.arc(s.x,s.y,s.r,0,6.28);x.fill();}requestAnimationFrame(dr);}
  addEventListener("resize",rs);rs();requestAnimationFrame(dr);})();
 </script>
 </body>
