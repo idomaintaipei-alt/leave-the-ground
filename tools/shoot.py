@@ -44,11 +44,12 @@ for k in range(0, len(imgs), 3):
         name = os.path.basename(files[k+j]); d.text((x, 18), (f"開場 {int(name[1:3])+1}" if name.startswith("i") else f"第 {int(name[1:3])+1:02d} 句"), fill="#2a333c", font=font)
         page.paste(im, (x, top))
     pages.append(page)
-pdf = os.path.join(r"D:\USER\A240613\Desktop", f"離開地面_21句手機畫面_{roc}.pdf")
+DESK = r"D:\USER\A240613\Desktop\離開地面"; os.makedirs(DESK, exist_ok=True)   # 成品統一放這個資料夾
+pdf = os.path.join(DESK, f"離開地面_21句手機畫面_{roc}.pdf")
 try:
     pages[0].save(pdf, save_all=True, append_images=pages[1:], resolution=144)
 except PermissionError:  # 使用者開著舊檔，就加時間另存
     hm = datetime.datetime.now().strftime("%H%M")
-    pdf = os.path.join(r"D:\USER\A240613\Desktop", f"離開地面_21句手機畫面_{roc}_{hm}.pdf")
+    pdf = os.path.join(DESK, f"離開地面_21句手機畫面_{roc}_{hm}.pdf")
     pages[0].save(pdf, save_all=True, append_images=pages[1:], resolution=144)
 print("PDF:", pdf, len(pages), "pages")
