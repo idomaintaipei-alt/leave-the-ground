@@ -96,6 +96,9 @@ h1{font-weight:300;font-size:30px;line-height:1.35;letter-spacing:.06em;margin:3
 .q{white-space:pre-line;padding-left:1.2em;margin-top:16px;font-size:27px;line-height:1.75;font-weight:500;letter-spacing:.04em;text-wrap:balance;opacity:0;transition:opacity 2.2s ease}
 .q.in{opacity:1}
 .q::before{content:"「";color:var(--ember);margin-left:-1em}
+.q.tight{padding-left:0;margin-left:-14px;margin-right:-14px;letter-spacing:-.02em}
+.q.tight::before{margin-left:0}
+.q.tight::after{margin-right:-1em}
 .q::after{content:"」";color:var(--ember)}
 .src{margin-top:18px;font-size:13px;line-height:1.8;color:var(--ink2);opacity:0;transition:opacity 1.6s ease}
 .src.in{opacity:1}
@@ -326,12 +329,21 @@ function pick(){
 /* 行尾標點：每行結尾的 ，。！？；： 去掉（句中保留），詩的排法 */
 function trimPunct(q){ return q.split("\n").map(l=>l.replace(/[，。！？；：]+$/,"")).join("\n"); }
 const NOPUNCT=true;   // 定案（11-27）：行尾標點不畫，句中保留
-function fitQuote(el){
-  const lines=el.textContent.split("\n"); const W=(el.parentElement&&el.parentElement.clientWidth)||331;   // 容器寬（含縮排）
-  let need=0; lines.forEach((l,i)=>{ need=Math.max(need,[...l].length+(i===lines.length-1?1:0)); });
+function renderedLines(el){   // 實際畫出來幾行（用每個字的位置數不同的 top）
+  const tops=new Set(); const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){ const n=walker.currentNode; for(let i=0;i<n.length;i++){ if(n.textContent[i]==="\n") continue; const r=document.createRange(); r.setStart(n,i); r.setEnd(n,i+1); const rc=r.getBoundingClientRect(); if(rc.width||rc.height) tops.add(Math.round(rc.top)); } }
+  return tops.size;
+}
+function fitQuote(el){   // 從大到小一格一格試，直到畫出來的行數＝標好的行數；先一般模式（有縮排）到 20px，不行就長句模式到 14px
+  const want=el.textContent.split("\n").length;
   const base=matchMedia("(min-width:600px)").matches?31:27;
-  const f=Math.max(14,Math.min(base,Math.floor(W/(need*1.04+1.25))));   // 1.25em＝左縮排 1.2em＋餘裕
-  el.style.fontSize=f+"px";
+  const wasHidden=!el.offsetParent; const sec=el.closest("section"); let tmp=false;
+  if(wasHidden&&sec&&!sec.classList.contains("on")){ sec.style.display="block"; tmp=true; }
+  el.classList.remove("tight");
+  let ok=false;
+  for(let f=base; f>=20; f--){ el.style.fontSize=f+"px"; if(renderedLines(el)<=want){ ok=true; break; } }
+  if(!ok){ el.classList.add("tight"); for(let f=22; f>=14; f--){ el.style.fontSize=f+"px"; if(renderedLines(el)<=want) break; } }
+  if(tmp) sec.style.display="";
 }
 function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));const el=$(id);el.classList.add("on");el.style.animation="none";el.offsetHeight;el.style.animation="";window.scrollTo({top:0,behavior:"smooth"});}
 function setAlt(v){altEl.textContent=Math.round(v).toLocaleString();}
