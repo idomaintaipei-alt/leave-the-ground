@@ -91,7 +91,7 @@ h1{font-weight:300;font-size:30px;line-height:1.35;letter-spacing:.06em;margin:3
 .mood.wide{grid-column:1/-1;text-align:center}
 
 /* 營地：一句話 */
-.camp-tag{margin-top:30px;font-size:12px;letter-spacing:.3em;color:var(--ember)}
+.camp-tag{margin-top:30px;font-size:12px;letter-spacing:.3em;color:var(--ink2);opacity:.7}
 .camp-tag .open{display:block;margin-bottom:6px;letter-spacing:.15em;color:var(--ink2)}
 .q{white-space:pre-line;padding-left:1.2em;margin-top:16px;font-size:27px;line-height:1.75;font-weight:500;letter-spacing:.04em;text-wrap:balance;opacity:0;transition:opacity 2.2s ease}
 .q.in{opacity:1}
@@ -232,7 +232,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
-const BUILD="1151127-1440";
+const BUILD="1151127-1450";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
@@ -359,7 +359,7 @@ function camp(){
   $("#q-why").textContent=cur.why; $("#q-ask").textContent=cur.ask;
   const bb=$("#b-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
   const up=$("#b-up"); up.disabled=true; up.textContent="往上"; $("#hint").textContent="字還在出現，先讀。";
-  show("#s-camp");
+  show("#s-camp"); prepCard(()=>makeCard(cur));
   setTimeout(()=>$("#q-text").classList.add("in"),200);
   setTimeout(()=>$("#q-src").classList.add("in"),2600);
   setTimeout(()=>$("#q-why").classList.add("in"),4800);
@@ -395,42 +395,74 @@ function summit(){
   picked.forEach(q=>{const bk=q.b?BOOKS[q.b]:null; const d=document.createElement("div");
     d.innerHTML=`<div class="rq">「${trimPunct(q.q)}」</div>`+(bk?`<a href="${bk.u}" target="_blank" rel="noopener"><span>${String(q.b).padStart(2,"0")}</span>《${bk.t}》${bk.s}</a>`:`<a><span>00</span>meters 書系總序</a>`);
     R.appendChild(d);});
-  show("#s-summit");
+  show("#s-summit"); prepCard(()=>makeSummitCard(picked,alt));
 }
 function toast(s){const t=$("#toast");t.textContent=s;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),1800);}
 /* 畫一張分享卡：天色照心情、山稜、那句話、出處、網址（1080×1350） */
-async function makeCard(q){
+async function cardBase(topRatio){   // 共用底圖：天色照心情、星、三層山；topRatio＝山頂在畫面幾成高
   try{ await document.fonts.load('500 60px "Noto Serif TC"'); await document.fonts.load('300 30px "Noto Sans TC"'); }catch(_){}
   const W=1080,H=1350,c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
   const cs=getComputedStyle(document.body), v=n=>cs.getPropertyValue(n).trim();
   const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,v("--sky0"));g.addColorStop(.7,v("--sky1"));g.addColorStop(1,v("--sky2"));x.fillStyle=g;x.fillRect(0,0,W,H);
-  // 星
   let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
   for(let i=0;i<220;i++){x.globalAlpha=(.25+rnd()*.6)*starAlpha;x.fillStyle="#e9e4d8";x.beginPath();x.arc(rnd()*W,rnd()*H*.55,.6+rnd()*1.8,0,6.28);x.fill();}
   x.globalAlpha=1;
-  // 山（三層，主稜用目前心情的形狀）
   const layers=[[v("--m1"),document.querySelector(".r1").getAttribute("d")],[v("--m2"),document.querySelector(".r2").getAttribute("d")],[v("--m3"),document.querySelector(".r3").getAttribute("d")]];
-  const top=H*.60, sh=H-top;
+  const top=H*topRatio, sh=H-top;
   for(const [col,d] of layers){x.fillStyle=col;x.beginPath();const seg=d.match(/[ML][^MLZ]+/g);for(const s of seg){const [px,py]=s.slice(1).trim().split(",").map(Number);const X=px/1000*W,Y=top+py/420*sh;s[0]==="M"?x.moveTo(X,Y):x.lineTo(X,Y);}x.closePath();x.fill();}
-  // 文字
+  return {c,x,W,H,v};
+}
+function cardWrap(x,text,x0,y,maxW,lh){   // 逐字換行，標點不放行首；回傳下一行的 y
+  for(const seg of text.split("\n")){ let line=""; for(const ch of [...seg]){const t=line+ch;if(x.measureText(t).width>maxW&&!/[」。，！？…]/.test(ch)){x.fillText(line,x0,y);y+=lh;line=ch;}else line=t;} x.fillText(line,x0,y);y+=lh; }
+  return y;
+}
+/* 單句卡（營地、今天到這裡就好）：1080×1350 */
+async function makeCard(q){
+  const {c,x,W,H,v}=await cardBase(.60);
   const ink="#e9e4d8",ink2="#a8b3bf",ember=v("--ember");
   x.fillStyle=ember;x.font='300 26px "Noto Sans TC"';x.textBaseline="top";
   const bk=q.b?BOOKS[q.b]:null; x.fillText((bk?`METERS ${String(q.b).padStart(2,"0")}　${bk.t}`:"METERS　書系總序"),96,120);
   x.fillStyle=ink;x.font='500 58px "Noto Serif TC"';
-  let y=200,maxW=W-192; const segs=("「"+trimPunct(q.q)+"」").split("\n");
-  for(const seg of segs){ let line=""; for(const ch of [...seg]){const t=line+ch;if(x.measureText(t).width>maxW&&!/[」。，！？…]/.test(ch)){x.fillText(line,96,y);y+=96;line=ch;}else line=t;} x.fillText(line,96,y);y+=96; }
+  let y=cardWrap(x,"「"+trimPunct(q.q)+"」",96,200,W-192,96);
   y+=34;
   x.fillStyle=ink2;x.font='300 28px "Noto Sans TC"';
   const src=(bk?`《${bk.t}》${bk.a}　｜　`:"")+q.by; x.fillText(src,96,y);
   x.fillStyle=ink2;x.font='300 24px "Noto Sans TC"';x.fillText("離開地面　"+site().replace(/^https?:\/\//,""),96,H-80);
   return new Promise(res=>c.toBlob(res,"image/png"));
 }
+/* 山頂卡：今天的高度＋三句，山壓低到七成，字不跟山搶 */
+async function makeSummitCard(qs,altV){
+  const {c,x,W,H,v}=await cardBase(.74);
+  const ink="#e9e4d8",ink2="#a8b3bf",ember=v("--ember");
+  x.textBaseline="top";
+  x.fillStyle=ember;x.font='300 26px "Noto Sans TC"';x.fillText("今天離開地面",96,104);
+  x.fillStyle=ink;x.font='500 72px "Noto Serif TC"';x.fillText(`${altV.toLocaleString()} 公尺`,96,142);
+  let y=290;
+  for(const q of qs){
+    const bk=q.b?BOOKS[q.b]:null;
+    x.fillStyle=ink;x.font='500 48px "Noto Serif TC"';
+    y=cardWrap(x,"「"+trimPunct(q.q)+"」",96,y,W-192,76);
+    y+=6; x.fillStyle=ink2;x.font='300 26px "Noto Sans TC"';
+    x.fillText(bk?`${String(q.b).padStart(2,"0")}　《${bk.t}》　${q.by}`:`00　meters 書系總序　${q.by}`,96,y);
+    y+=96;
+  }
+  x.fillStyle=ink2;x.font='300 24px "Noto Sans TC"';x.fillText("離開地面　"+site().replace(/^https?:\/\//,""),96,H-80);
+  return new Promise(res=>c.toBlob(res,"image/png"));
+}
+let cardJob=null;   // 這個畫面的分享卡，先畫好放著
+function prepCard(fn){ cardJob=(async()=>{ try{ const b=await fn(); return b?[new File([b],"leave-the-ground.png",{type:"image/png"})]:[]; }catch(_){ return []; } })(); }
 async function share(text,withCard){
   let files=[];
-  if(withCard&&cur){ try{const b=await makeCard(cur); if(b) files=[new File([b],"leave-the-ground.png",{type:"image/png"})];}catch(_){} }
+  if(withCard){ files=await (cardJob||Promise.resolve([])); }   // 通常已畫好，等的只是一瞬
   if(navigator.share){
-    try{ if(files.length&&navigator.canShare&&navigator.canShare({files})) {await navigator.share({text,files});return;} await navigator.share({text});return; }catch(e){ if(e&&e.name==="AbortError") return; }
+    try{ if(files.length&&navigator.canShare&&navigator.canShare({files})) {await navigator.share({text,files});return;} await navigator.share({text});return; }
+    catch(e){ if(e&&e.name==="AbortError") return;
+      // 分享面板叫不出來：文字複製起來、圖存下來，留在這頁
+      try{ await navigator.clipboard.writeText(text); }catch(_){}
+      if(files.length){ const a=document.createElement("a");a.href=URL.createObjectURL(files[0]);a.download="leave-the-ground.png";a.click(); }
+      toast("文字複製好了，圖也存下了，到 Threads 貼上"); return; }
   }
+  // 電腦沒有分享面板：圖存下來、開 Threads 發文頁
   if(files.length){ const a=document.createElement("a");a.href=URL.createObjectURL(files[0]);a.download="leave-the-ground.png";a.click(); toast("圖片已存下，貼文時附上"); }
   window.open("https://www.threads.net/intent/post?text="+encodeURIComponent(text),"_blank");
 }
@@ -521,7 +553,7 @@ function stay(){
   $("#stay-src").innerHTML=bk?`<b>《${bk.t}》</b><span class="sub">${bk.s}</span><span class="who">${bk.a}　｜　${cur.by}</span>`:(cur?`<span class="who">${cur.by}</span>`:"");
   const bb=$("#b-stay-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
   bars.forEach((b,i)=>{b.classList.toggle("done",i<=step);b.classList.remove("now");});
-  show("#s-stay");
+  show("#s-stay"); if(cur) prepCard(()=>makeCard(cur));
 }
 $("#b-up").onclick=()=>{ step++; if(step>=3) summit(); else view(); };
 $("#b-view-go").onclick=()=>camp();
@@ -530,7 +562,7 @@ $("#b-stay").onclick=()=>stay();
 $("#b-stay-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n今天到這裡就好。\n${site()}`,true);};
 $("#b-stay-again").onclick=()=>$("#b-again").onclick();
 $("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true);};
-$("#b-share2").onclick=()=>share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n十本山岳文學，一次一句。\n${site()}`);
+$("#b-share2").onclick=()=>{ const lines=picked.map(q=>{const bk=q.b?BOOKS[q.b]:null; return `「${trimPunct(q.q).replace(/\n/g,"")}」${bk?`《${bk.t}》`:"總序"}`;}).join("\n"); share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n\n${lines}\n\n十本山岳文學，一次一句。\n${site()}`, true); };
 $("#b-again").onclick=()=>{clearInterval(timer);alt=baseAlt;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;document.querySelector(".r1").setAttribute("d",MOODS.any.ridge);snowFollow();applySky();bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
 
 /* 自動抓新版：比對伺服器上的 ETag，不一樣就重新載入一次（朋友只要重新整理或重開就會拿到最新版） */
