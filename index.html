@@ -22,13 +22,14 @@ body[data-mood=any]{--sky0:#0e1a2a;--sky1:#1b3350;--sky2:#2f5070;--ember:#e0b06a
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:"Noto Serif TC","Noto Serif CJK TC","PMingLiU",serif;color:var(--ink);
-  background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 52%,var(--sky2) 100%);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background 2s}
+  background:var(--sky2);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+#skybg{position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 52%,var(--sky2) 100%);transition:background 2s}   /* 天空固定貼在螢幕，頁面再長也不重複 */
 .r1{fill:var(--m1)}.r2{fill:var(--m2)}.r3{fill:var(--m3)}
 .r1,.r2,.r3{transition:fill 2s}
 .sans{font-family:"Noto Sans TC","Noto Sans CJK TC","Microsoft JhengHei",sans-serif}
 #stars{position:fixed;inset:0;pointer-events:none}
 #sun{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity 2s;background:radial-gradient(circle at 84% 78%,rgba(255,236,200,.5),rgba(255,236,200,0) 30%)}
-#mtn{position:fixed;left:0;right:0;bottom:0;height:44dvh;pointer-events:none;transition:transform 2.5s cubic-bezier(.2,.7,.2,1);will-change:transform;transform:translateZ(0)}
+#mtn{position:fixed;left:0;right:0;bottom:-10dvh;height:54dvh;pointer-events:none;transition:transform 2.5s cubic-bezier(.2,.7,.2,1);will-change:transform;transform:translateZ(0)}
 #mtn svg{width:100%;height:100%;display:block}
 .snow{fill:#cfd8e0;opacity:0;transition:opacity 2s}
 main{touch-action:pan-y}
@@ -56,7 +57,7 @@ body[data-align=end] .q{text-align:right;padding-left:0;padding-right:.2em}
 body[data-align=end] .q::before{margin-left:0}
 body.shot{width:375px;overflow:hidden}
 body.shot main{width:375px}
-body.shot #mtn,body.shot #sun,body.shot #stars{width:375px;right:auto}
+body.shot #mtn,body.shot #sun,body.shot #stars,body.shot #skybg{width:375px;right:auto}
 body.shot .q,body.shot .src,body.shot .why,body.shot .ask,body.shot .intro-line,body.shot .intro-acts{transition:none}
 section.on{display:block}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -137,6 +138,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 </style>
 </head>
 <body>
+<div id="skybg"></div>
 <canvas id="stars"></canvas>
 <div id="sun" aria-hidden="true"></div>
 <div id="mtn" aria-hidden="true">
@@ -232,7 +234,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
-const BUILD="1151127-1500";
+const BUILD="1151127-1510";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
