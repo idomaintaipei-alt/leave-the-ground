@@ -30,10 +30,10 @@ body{font-family:"Noto Serif TC","Noto Serif CJK TC","PMingLiU",serif;color:var(
 #sun{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity 2s;background:radial-gradient(circle at 84% 78%,rgba(255,236,200,.5),rgba(255,236,200,0) 30%)}
 #mtn{position:fixed;left:0;right:0;bottom:0;height:44dvh;pointer-events:none;transition:transform 2.5s cubic-bezier(.2,.7,.2,1)}
 #mtn svg{width:100%;height:100%;display:block}
-.snow{fill:#e9e4d8;opacity:0;transition:opacity 2s}
+.snow{fill:#cfd8e0;opacity:0;transition:opacity 2s}
 main{touch-action:pan-y}
 .drag{margin-top:10px;font-size:12px;letter-spacing:.2em;color:var(--ink2);opacity:.6}
-body.high .snow{opacity:.85}
+body.high .snow{opacity:.22}   /* 背景不准比字張揚 */
 
 main{position:relative;z-index:2;max-width:520px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 22px 42dvh}
 header{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0 16px;border-bottom:1px solid var(--line)}
