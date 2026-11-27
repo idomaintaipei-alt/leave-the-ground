@@ -293,8 +293,10 @@ const MOODS={
 let mood="any", alt=0, used=new Set(), step=0, cur=null, picked=[], timer=null, t0=0, dragBonus=0;
 const $=s=>document.querySelector(s), altEl=$("#alt b"), mtn=$("#mtn"), bars=[...document.querySelectorAll("#camps i")];
 
+const FORCE_B=(()=>{const v=new URLSearchParams(location.search).get("b"); return v===null?null:+v;})();  // 測試用：?b=0 第一營地抽總序，?b=7 抽靜謐的榮光
 function pick(){
   const books=new Set(picked.map(p=>p.b));
+  if(FORCE_B!==null&&step===0){ const f=QUOTES.filter(q=>q.b===FORCE_B); if(f.length){ const q=f[Math.floor(Math.random()*f.length)]; used.add(QUOTES.indexOf(q)); return q; } }
   let pool=QUOTES.filter((q,i)=>!used.has(i)&&(mood==="any"||q.m.includes(mood)));
   const fresh=pool.filter(q=>!books.has(q.b)); if(fresh.length) pool=fresh;   // 同一趟優先換不同的書
   if(!pool.length) pool=QUOTES.filter((q,i)=>!used.has(i));
