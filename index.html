@@ -215,6 +215,8 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 <div class="toast" id="toast"></div>
 
 <script>
+/* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
+const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
  2:{t:"我的山間初夏",s:"國家公園之父約翰．繆爾的啟蒙手記",a:"約翰．繆爾",u:"https://www.books.com.tw/products/0011043447"},
@@ -308,7 +310,7 @@ function camp(){
   $("#q-text").textContent=cur.q;
   $("#q-src").innerHTML=bk?`<b>《${bk.t}：${bk.s}》</b>　${bk.a}　｜　${cur.by}`:cur.by;
   $("#q-why").textContent=cur.why; $("#q-ask").textContent=cur.ask;
-  const bb=$("#b-book"); if(bk){bb.style.display="";bb.href=bk.u;}else bb.style.display="none";
+  const bb=$("#b-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
   ["#q-text","#q-src","#q-why","#q-ask"].forEach(s=>$(s).classList.remove("in"));
   const up=$("#b-up"); up.disabled=true; up.textContent="往上"; $("#hint").textContent="字還在出現，先讀。";
   show("#s-camp");
@@ -444,7 +446,7 @@ function stay(){
   $("#stay-tag").textContent=CAMPS[step]+"　"+alt.toLocaleString()+" m";
   $("#stay-q").textContent=cur?cur.q:"";
   $("#stay-src").innerHTML=bk?`<b>《${bk.t}：${bk.s}》</b>　${bk.a}　｜　${cur.by}`:(cur?cur.by:"");
-  const bb=$("#b-stay-book"); if(bk){bb.style.display="";bb.href=bk.u;} else bb.style.display="none";
+  const bb=$("#b-stay-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
   bars.forEach((b,i)=>{b.classList.toggle("done",i<=step);b.classList.remove("now");});
   show("#s-stay");
 }
