@@ -22,11 +22,12 @@ body[data-mood=any]{--sky0:#0e1a2a;--sky1:#1b3350;--sky2:#2f5070;--ember:#e0b06a
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:"Noto Serif TC","Noto Serif CJK TC","PMingLiU",serif;color:var(--ink);
-  background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 70%,var(--sky2) 100%);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background 2s}
+  background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 52%,var(--sky2) 100%);min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased;transition:background 2s}
 .r1{fill:var(--m1)}.r2{fill:var(--m2)}.r3{fill:var(--m3)}
 .r1,.r2,.r3{transition:fill 2s,d 2s}
 .sans{font-family:"Noto Sans TC","Noto Sans CJK TC","Microsoft JhengHei",sans-serif}
 #stars{position:fixed;inset:0;pointer-events:none}
+#sun{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity 2s;background:radial-gradient(circle at 84% 78%,rgba(255,236,200,.5),rgba(255,236,200,0) 30%)}
 #mtn{position:fixed;left:0;right:0;bottom:0;height:44dvh;pointer-events:none;transition:transform 2.5s cubic-bezier(.2,.7,.2,1)}
 #mtn svg{width:100%;height:100%;display:block}
 .snow{fill:#e9e4d8;opacity:0;transition:opacity 2s}
@@ -117,6 +118,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 </head>
 <body>
 <canvas id="stars"></canvas>
+<div id="sun" aria-hidden="true"></div>
 <div id="mtn" aria-hidden="true">
   <svg viewBox="0 0 1000 420" preserveAspectRatio="none">
     <path class="r1" d="M0,420 L0,300 L80,250 L150,290 L240,170 L300,230 L380,120 L430,180 L520,90 L600,190 L680,140 L760,220 L840,160 L920,240 L1000,200 L1000,420 Z"/>
@@ -345,7 +347,7 @@ async function makeCard(q){
   const top=H*.60, sh=H-top;
   for(const [col,d] of layers){x.fillStyle=col;x.beginPath();const seg=d.match(/[ML][^MLZ]+/g);for(const s of seg){const [px,py]=s.slice(1).trim().split(",").map(Number);const X=px/1000*W,Y=top+py/420*sh;s[0]==="M"?x.moveTo(X,Y):x.lineTo(X,Y);}x.closePath();x.fill();}
   // 文字
-  const ink=v("--ink")||"#e9e4d8",ink2=v("--ink2")||"#a8b3bf",ember=v("--ember");
+  const ink="#e9e4d8",ink2="#a8b3bf",ember=v("--ember");
   x.fillStyle=ember;x.font='300 26px "Noto Sans TC"';x.textBaseline="top";
   const bk=q.b?BOOKS[q.b]:null; x.fillText((bk?`METERS ${String(q.b).padStart(2,"0")}　${bk.t}`:"METERS　書系總序"),96,120);
   x.fillStyle=ink;x.font='500 58px "Noto Serif TC"';
@@ -464,7 +466,7 @@ let tiltOn=false;
 function onTilt(e){
   if(!$("#s-camp").classList.contains("on")) return;
   const beta=e.beta; if(beta==null) return;           // 0 平放、90 直立
-  const k=Math.min(1,Math.max(.12,(beta-15)/45));      // 平放很淡，舉起來才清楚
+  const k=Math.min(1,Math.max(.3,(beta-5)/40));        // 平放淡（但還讀得到），立到 45 度就全亮；不能妨礙閱讀
   $("#s-camp").style.opacity=k;
   mtn.style.filter=`brightness(${.75+.35*k})`;
 }
@@ -499,14 +501,14 @@ function enableGeo(){
 if(navigator.geolocation){ $("#b-geo").hidden=false; $("#b-geo").onclick=enableGeo; }
 
 /* ---------- 山是活的（1）：真實時間決定天色，心情只是染一層 ---------- */
-const TIMES=[ // [起始小時, 天頂, 中段, 地平線, 星星亮度, 名字, 字色, 山1, 山2, 山3]
- [0,  "#060a0f","#0e151f","#182230",1.0,"深夜","#e9e4d8","#1f2a38","#161e2a","#0f141c"],
- [4.5,"#2a2f4a","#6a5572","#c48a7a",0.5,"黎明","#f0e9df","#3a3650","#2a2840","#1c1a2c"],
- [6.5,"#7fa3c4","#a9c4d8","#e2d9cf",0.0,"清晨","#1f2a36","#4b6a86","#3b566f","#2c4256"],
- [9,  "#8fb6d6","#bcd3e4","#eef2f3",0.0,"白天","#1f2a36","#5b7a94","#48657d","#36506a"],
- [16, "#6f86a6","#b08a8a","#e2b58a",0.05,"傍晚","#22282f","#4c5e74","#3b4a5e","#2c3948"],
- [18, "#1f2742","#5a3a55","#b35e46",0.4,"黃昏","#efe6da","#33293f","#261e30","#181321"],
- [19.5,"#090d17","#151c2b","#25303f",0.9,"夜","#e9e4d8","#223447","#1a2a3b","#131f2c"],
+const TIMES=[ // [起始小時, 天頂, 中段, 地平線, 星星亮度, 名字, 日光, 山1, 山2, 山3]  字永遠淺色，上半天空永遠夠深
+ [0,  "#060a0f","#0e151f","#182230",1.0,"深夜",0.00,"#1f2a38","#161e2a","#0f141c"],
+ [4.5,"#101729","#352f52","#c07a66",0.5,"黎明",0.15,"#352c48","#26203a","#191528"],
+ [6.5,"#15304f","#275a88","#cfe0ea",0.0,"清晨",0.45,"#3d6a8c","#2f5675","#22425c"],
+ [9,  "#183f6a","#2e70aa","#dfeaf1",0.0,"白天",0.55,"#44769a","#355f7f","#274a66"],
+ [16, "#1c3250","#4c5878","#e0a06a",0.05,"傍晚",0.35,"#3e5470","#2f4259","#223246"],
+ [18, "#12172c","#3b2742","#b85a3e",0.4,"黃昏",0.12,"#31273d","#241c2e","#17121f"],
+ [19.5,"#090d17","#151c2b","#25303f",0.9,"夜",0.00,"#223447","#1a2a3b","#131f2c"],
 ];
 let starAlpha=1;
 const hex2=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
@@ -517,8 +519,8 @@ function timeSky(){
   const a=TIMES[i], b=TIMES[(i+1)%TIMES.length]; const end=(i+1<TIMES.length)?b[0]:24;
   const k=Math.min(1,Math.max(0,(h-a[0])/Math.max(.01,end-a[0])));
   const sky=[1,2,3].map(n=>mix(a[n],b[n],k)); starAlpha=a[4]+(b[4]-a[4])*k;
-  const ink=mix(a[6],b[6],k), m=[7,8,9].map(n=>mix(a[n],b[n],k));
-  return {sky,ink,m,name:a[5],hhmm:d.toTimeString().slice(0,5)};
+  const sun=a[6]+(b[6]-a[6])*k, m=[7,8,9].map(n=>mix(a[n],b[n],k));
+  return {sky,sun,m,name:a[5],hhmm:d.toTimeString().slice(0,5)};
 }
 function applySky(){
   const t=timeSky(), st=document.body.style;
@@ -526,7 +528,7 @@ function applySky(){
   const md=document.body.dataset.mood; const base=md?MOODSKY[md]:MOODSKY.none;
   st.setProperty("--sky0",mix(t.sky[0],base[0],.25)); st.setProperty("--sky1",mix(t.sky[1],base[1],.25)); st.setProperty("--sky2",mix(t.sky[2],base[2],.25));
   st.setProperty("--m1",t.m[0]); st.setProperty("--m2",t.m[1]); st.setProperty("--m3",t.m[2]);
-  const [r,g,b]=hex2(t.ink); st.setProperty("--ink",t.ink); st.setProperty("--ink2",mix(t.ink,t.sky[1],.45)); st.setProperty("--line",`rgba(${r},${g},${b},.18)`);
+  $("#sun").style.opacity=t.sun;
   $("#skyname").textContent=`${t.name} ${t.hhmm} 的山`;
 }
 const MOODSKY={none:["#0e1620","#1b2a3a","#2a3a4a"],stuck:["#0b0f14","#161c24","#2a2f36"],tired:["#141a2a","#23304a","#3a4a63"],lost:["#10171a","#1c2a2c","#2e4144"],quit:["#160f12","#2a1b22","#3e2a33"],any:["#0e1a2a","#1b3350","#2f5070"]};
