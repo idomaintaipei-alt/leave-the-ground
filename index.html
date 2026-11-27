@@ -171,7 +171,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
       <button class="btn" id="b-share">把這句分享到 Threads</button>
       <a class="btn" id="b-book" href="#" target="_blank" rel="noopener">這本書</a>
     </div>
-    <div class="acts"><button class="btn ghost" id="b-stay">今天到這裡就好</button></div>
+    <div class="acts"><button class="btn ghost" id="b-stay">今天到這裡就好</button><button class="btn ghost" id="b-tilt2" hidden>讓山感覺你的手</button></div>
   </section>
 
   <!-- 風景：營地之間，什麼都不做 -->
@@ -339,23 +339,23 @@ async function makeCard(q){
   const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,v("--sky0"));g.addColorStop(.7,v("--sky1"));g.addColorStop(1,v("--sky2"));x.fillStyle=g;x.fillRect(0,0,W,H);
   // 星
   let seed=7;const rnd=()=>(seed=(seed*9301+49297)%233280)/233280;
-  for(let i=0;i<220;i++){x.globalAlpha=.25+rnd()*.6;x.fillStyle="#e9e4d8";x.beginPath();x.arc(rnd()*W,rnd()*H*.55,.6+rnd()*1.8,0,6.28);x.fill();}
+  for(let i=0;i<220;i++){x.globalAlpha=(.25+rnd()*.6)*starAlpha;x.fillStyle="#e9e4d8";x.beginPath();x.arc(rnd()*W,rnd()*H*.55,.6+rnd()*1.8,0,6.28);x.fill();}
   x.globalAlpha=1;
   // 山（三層，主稜用目前心情的形狀）
   const layers=[[v("--m1"),document.querySelector(".r1").getAttribute("d")],[v("--m2"),document.querySelector(".r2").getAttribute("d")],[v("--m3"),document.querySelector(".r3").getAttribute("d")]];
   const top=H*.60, sh=H-top;
   for(const [col,d] of layers){x.fillStyle=col;x.beginPath();const seg=d.match(/[ML][^MLZ]+/g);for(const s of seg){const [px,py]=s.slice(1).trim().split(",").map(Number);const X=px/1000*W,Y=top+py/420*sh;s[0]==="M"?x.moveTo(X,Y):x.lineTo(X,Y);}x.closePath();x.fill();}
   // 文字
-  const ink="#e9e4d8",ember=v("--ember");
+  const ink=v("--ink")||"#e9e4d8",ink2=v("--ink2")||"#a8b3bf",ember=v("--ember");
   x.fillStyle=ember;x.font='300 26px "Noto Sans TC"';x.textBaseline="top";
   const bk=q.b?BOOKS[q.b]:null; x.fillText((bk?`METERS ${String(q.b).padStart(2,"0")}　${bk.t}`:"METERS　書系總序"),96,120);
   x.fillStyle=ink;x.font='500 58px "Noto Serif TC"';
   const chars=[...("「"+q.q+"」")];let line="",y=200,maxW=W-192;
   for(const ch of chars){const t=line+ch;if(x.measureText(t).width>maxW&&!/[」。，！？…]/.test(ch)){x.fillText(line,96,y);y+=96;line=ch;}else line=t;}
   x.fillText(line,96,y);y+=130;
-  x.fillStyle="#a8b3bf";x.font='300 28px "Noto Sans TC"';
+  x.fillStyle=ink2;x.font='300 28px "Noto Sans TC"';
   const src=(bk?`《${bk.t}》${bk.a}　｜　`:"")+q.by; x.fillText(src,96,y);
-  x.fillStyle="#a8b3bf";x.font='300 24px "Noto Sans TC"';x.fillText("離開地面　"+site().replace(/^https?:\/\//,""),96,H-80);
+  x.fillStyle=ink2;x.font='300 24px "Noto Sans TC"';x.fillText("離開地面　"+site().replace(/^https?:\/\//,""),96,H-80);
   return new Promise(res=>c.toBlob(res,"image/png"));
 }
 async function share(text,withCard){
@@ -475,10 +475,12 @@ async function enableTilt(){
       const r=await DeviceOrientationEvent.requestPermission(); if(r!=="granted"){toast("沒有拿到感應權限");return;}
     }
     addEventListener("deviceorientation",onTilt); tiltOn=true; LS.set("ltg-tilt","1");
-    $("#b-tilt").classList.add("on"); $("#b-tilt").textContent="山感覺得到你的手了"; toast("把手機放平，字會沉下去；舉起來，字才浮出來。");
+    ["#b-tilt","#b-tilt2"].forEach(s=>{$(s).classList.add("on"); $(s).textContent="山感覺得到你的手了";});
+    $(".drag").textContent="手機平放，字會沉下去；慢慢舉起來，字才浮出來。";
+    toast("把手機放平，字會沉下去；舉起來，字才浮出來。");
   }catch(_){ toast("這支手機不支援"); }
 }
-if(typeof DeviceOrientationEvent!=="undefined"&&("ontouchstart" in window)){ $("#b-tilt").hidden=false; $("#b-tilt").onclick=enableTilt; }
+if(typeof DeviceOrientationEvent!=="undefined"&&("ontouchstart" in window)){ ["#b-tilt","#b-tilt2"].forEach(s=>{$(s).hidden=false; $(s).onclick=enableTilt;}); }
 
 /* ---------- 山是活的（4）：海拔 ---------- */
 let baseAlt=0;
@@ -495,14 +497,14 @@ function enableGeo(){
 if(navigator.geolocation){ $("#b-geo").hidden=false; $("#b-geo").onclick=enableGeo; }
 
 /* ---------- 山是活的（1）：真實時間決定天色，心情只是染一層 ---------- */
-const TIMES=[ // [起始小時, 天頂, 中段, 地平線, 星星亮度, 名字]
- [0,  "#060a0f","#0e151f","#182230",1.0,"深夜"],
- [4.5,"#0f1322","#2b2a46","#6a4852",0.6,"黎明"],
- [6.5,"#182c46","#2e5a84","#7c9fba",0.15,"清晨"],
- [9,  "#1d3b60","#3870a3","#98bad3",0.04,"白天"],
- [16, "#223858","#49597d","#ad7e5f",0.10,"傍晚"],
- [18, "#13162a","#39233f","#884938",0.45,"黃昏"],
- [19.5,"#090d17","#151c2b","#25303f",0.9,"夜"],
+const TIMES=[ // [起始小時, 天頂, 中段, 地平線, 星星亮度, 名字, 字色, 山1, 山2, 山3]
+ [0,  "#060a0f","#0e151f","#182230",1.0,"深夜","#e9e4d8","#1f2a38","#161e2a","#0f141c"],
+ [4.5,"#2a2f4a","#6a5572","#c48a7a",0.5,"黎明","#f0e9df","#3a3650","#2a2840","#1c1a2c"],
+ [6.5,"#7fa3c4","#a9c4d8","#e2d9cf",0.0,"清晨","#1f2a36","#4b6a86","#3b566f","#2c4256"],
+ [9,  "#8fb6d6","#bcd3e4","#eef2f3",0.0,"白天","#1f2a36","#5b7a94","#48657d","#36506a"],
+ [16, "#6f86a6","#b08a8a","#e2b58a",0.05,"傍晚","#22282f","#4c5e74","#3b4a5e","#2c3948"],
+ [18, "#1f2742","#5a3a55","#b35e46",0.4,"黃昏","#efe6da","#33293f","#261e30","#181321"],
+ [19.5,"#090d17","#151c2b","#25303f",0.9,"夜","#e9e4d8","#223447","#1a2a3b","#131f2c"],
 ];
 let starAlpha=1;
 const hex2=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
@@ -513,15 +515,16 @@ function timeSky(){
   const a=TIMES[i], b=TIMES[(i+1)%TIMES.length]; const end=(i+1<TIMES.length)?b[0]:24;
   const k=Math.min(1,Math.max(0,(h-a[0])/Math.max(.01,end-a[0])));
   const sky=[1,2,3].map(n=>mix(a[n],b[n],k)); starAlpha=a[4]+(b[4]-a[4])*k;
-  return {sky,name:a[5],hhmm:d.toTimeString().slice(0,5)};
+  const ink=mix(a[6],b[6],k), m=[7,8,9].map(n=>mix(a[n],b[n],k));
+  return {sky,ink,m,name:a[5],hhmm:d.toTimeString().slice(0,5)};
 }
 function applySky(){
-  const t=timeSky();
-  // 心情的色只染 35%，其餘跟著真實時間
-  const m=document.body.dataset.mood; const base=m?MOODSKY[m]:MOODSKY.none;
-  document.body.style.setProperty("--sky0",mix(t.sky[0],base[0],.35));
-  document.body.style.setProperty("--sky1",mix(t.sky[1],base[1],.35));
-  document.body.style.setProperty("--sky2",mix(t.sky[2],base[2],.35));
+  const t=timeSky(), st=document.body.style;
+  // 心情的色只染 25%，其餘跟著真實時間
+  const md=document.body.dataset.mood; const base=md?MOODSKY[md]:MOODSKY.none;
+  st.setProperty("--sky0",mix(t.sky[0],base[0],.25)); st.setProperty("--sky1",mix(t.sky[1],base[1],.25)); st.setProperty("--sky2",mix(t.sky[2],base[2],.25));
+  st.setProperty("--m1",t.m[0]); st.setProperty("--m2",t.m[1]); st.setProperty("--m3",t.m[2]);
+  const [r,g,b]=hex2(t.ink); st.setProperty("--ink",t.ink); st.setProperty("--ink2",mix(t.ink,t.sky[1],.45)); st.setProperty("--line",`rgba(${r},${g},${b},.18)`);
   $("#skyname").textContent=`${t.name} ${t.hhmm} 的山`;
 }
 const MOODSKY={none:["#0e1620","#1b2a3a","#2a3a4a"],stuck:["#0b0f14","#161c24","#2a2f36"],tired:["#141a2a","#23304a","#3a4a63"],lost:["#10171a","#1c2a2c","#2e4144"],quit:["#160f12","#2a1b22","#3e2a33"],any:["#0e1a2a","#1b3350","#2f5070"]};
