@@ -293,7 +293,13 @@ const MOODS={
 let mood="any", alt=0, used=new Set(), step=0, cur=null, picked=[], timer=null, t0=0, dragBonus=0;
 const $=s=>document.querySelector(s), altEl=$("#alt b"), mtn=$("#mtn"), bars=[...document.querySelectorAll("#camps i")];
 
-const FORCE_B=(()=>{const v=new URLSearchParams(location.search).get("b"); return v===null?null:+v;})();  // 測試用：?b=0 第一營地抽總序，?b=7 抽靜謐的榮光
+let FORCE_B=(()=>{const v=new URLSearchParams(location.search).get("b"); return v===null?null:+v;})();  // 測試用：?b=0 第一營地抽總序，?b=7 抽靜謐的榮光
+/* 測試手勢：長按最上面「幾點的山」那行 1.5 秒 → 第一營地固定總序；再長按一次取消 */
+(function(){let t=null;const el=$("#skyname");
+ const down=()=>{t=setTimeout(()=>{FORCE_B=(FORCE_B===0)?null:0; toast(FORCE_B===0?"測試：第一營地固定總序":"測試關閉");},1500);};
+ const up=()=>clearTimeout(t);
+ el.addEventListener("pointerdown",down); el.addEventListener("pointerup",up); el.addEventListener("pointercancel",up); el.addEventListener("pointerleave",up);
+ el.addEventListener("contextmenu",e=>e.preventDefault());})();
 function pick(){
   const books=new Set(picked.map(p=>p.b));
   if(FORCE_B!==null&&step===0){ const f=QUOTES.filter(q=>q.b===FORCE_B); if(f.length){ const q=f[Math.floor(Math.random()*f.length)]; used.add(QUOTES.indexOf(q)); return q; } }
