@@ -383,8 +383,27 @@ document.querySelectorAll(".mood").forEach(b=>b.addEventListener("click",()=>{
 })();
 /* 風景：營地之間，高度不動，十秒後才能往上 */
 let viewT=null;
+/* 風景的字：照時間、第幾段、心情抽，偶爾什麼都沒有（要改字改這裡） */
+const VIEWS={
+ any:  ["不用做什麼。","風在這裡比較大。","你聽得到自己的呼吸嗎。","這裡沒有訊號，剛好。",""],
+ 深夜: ["這個時間，山也醒著。","星星比山下多。",""],
+ 黎明: ["天要亮了，不急。","稜線先亮，谷還是暗的。"],
+ 清晨: ["露水還在。","影子很長。"],
+ 白天: ["太陽直直的，沒有遮的地方。","遠處有人在走，看不清楚。"],
+ 傍晚: ["光是斜的。","再一下就要變色了。"],
+ 黃昏: ["山變成剪影了。","今天剩下的光，都在這裡。"],
+ 夜:   ["看不到路，但路還在。","月亮出來了嗎，你抬頭看看。"],
+ step1:["第一段最喘。","回頭看，地面已經有點遠了。"],
+ step2:["快了，但不用快。","從這裡開始，字會少一點。"],
+ stuck:["坐下來不算輸。"], tired:["閉一下眼睛也可以。"], lost:["迷路的時候，最好的事是停。"], quit:["先看山，再決定。"],
+};
+function viewLine(){
+  const t=timeSky().name, pool=[...VIEWS.any, ...(VIEWS[t]||[]), ...(VIEWS["step"+step]||[]), ...(VIEWS[mood]||[])];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
 function view(){
   clearInterval(timer);
+  $("#view-line").textContent=viewLine();
   $("#view-line").classList.remove("in"); $("#view-acts").classList.remove("in");
   show("#s-view");
   setTimeout(()=>$("#view-line").classList.add("in"),1200);
