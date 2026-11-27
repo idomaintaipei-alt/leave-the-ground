@@ -234,7 +234,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
-const BUILD="1151127-1510";
+const BUILD="1151127-1515";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
@@ -419,6 +419,7 @@ function cardWrap(x,text,x0,y,maxW,lh,dry){   // 逐字換行，標點不放行�
   for(const seg of text.split("\n")){ let line=""; for(const ch of [...seg]){const t=line+ch;if(x.measureText(t).width>maxW&&!/[」。，！？…]/.test(ch)){put(line,y);y+=lh;line=ch;}else line=t;} put(line,y);y+=lh; }
   return y;
 }
+function cardFit(x,text,maxW,maxF,minF){ for(let f=maxF; f>=minF; f-=2){ x.font=`500 ${f}px "Noto Serif TC"`; if(text.split("\n").every(seg=>x.measureText(seg).width<=maxW)) return f; } return minF; }
 /* 單句卡（營地、今天到這裡就好）：1080×1350 */
 async function makeCard(q){
   const {c,x,W,H,v}=await cardBase(.62);
@@ -427,9 +428,8 @@ async function makeCard(q){
   const bk=q.b?BOOKS[q.b]:null, maxW=W-192, text="「"+trimPunct(q.q)+"」";
   // 字級：短句放大，長句縮小，最多三行
   const n=[...trimPunct(q.q).replace(/\n/g,"")].length;
-  let f=n<=8?84:n<=12?72:n<=18?62:54, lh=Math.round(f*1.6);
+  let f=cardFit(x,text,maxW,n<=8?84:n<=12?72:n<=18?62:54,40), lh=Math.round(f*1.6);
   x.font=`500 ${f}px "Noto Serif TC"`;
-  while(f>48 && (cardWrap(x,text,96,0,maxW,lh,true)/lh)>3){ f-=4; lh=Math.round(f*1.6); x.font=`500 ${f}px "Noto Serif TC"`; }
   const hq=cardWrap(x,text,96,0,maxW,lh,true);
   x.font='300 32px "Noto Sans TC"'; const hAsk=q.ask?cardWrap(x,q.ask,96,0,maxW,52,true):0;
   const hSrc=44, hAll=hq+28+hSrc+(hAsk?34+hAsk:0);
@@ -453,8 +453,9 @@ async function makeSummitCard(qs,altV){
   let y=290;
   for(const q of qs){
     const bk=q.b?BOOKS[q.b]:null;
-    x.fillStyle=ink;x.font='500 48px "Noto Serif TC"';
-    y=cardWrap(x,"「"+trimPunct(q.q)+"」",96,y,W-192,76);
+    const qt="「"+trimPunct(q.q)+"」", f=cardFit(x,qt,W-192,48,30);
+    x.fillStyle=ink;x.font=`500 ${f}px "Noto Serif TC"`;
+    y=cardWrap(x,qt,96,y,W-192,Math.round(f*1.58));
     y+=6; x.fillStyle=ink2;x.font='300 26px "Noto Sans TC"';
     x.fillText(bk?`${String(q.b).padStart(2,"0")}　《${bk.t}》　${q.by}`:`00　meters 書系總序　${q.by}`,96,y);
     y+=96;
