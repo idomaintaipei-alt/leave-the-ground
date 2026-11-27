@@ -428,7 +428,7 @@ const site=()=>location.href.split(/[?#]/)[0];
 function fitIntro(el){
   const W=(el.parentElement&&el.parentElement.clientWidth)||331;
   const need=Math.max(...el.textContent.split("\n").map(l=>[...l].length));
-  el.style.fontSize=Math.max(18,Math.min(24,Math.floor(W/(need*1.06+0.3))))+"px";
+  el.style.fontSize=Math.max(14,Math.min(24,Math.floor(W/(need*1.06+0.3))))+"px";
 }
 /* 開場 */
 let introI=0;
