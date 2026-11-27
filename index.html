@@ -96,6 +96,11 @@ h1{font-weight:300;font-size:30px;line-height:1.35;letter-spacing:.06em;margin:3
 .ask.in{opacity:1}
 .hint{margin-top:26px;font-size:12px;letter-spacing:.2em;color:var(--ink2);opacity:.75}
 .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.acts.row{flex-wrap:nowrap;gap:8px}
+.acts.row .btn{padding:11px 14px;font-size:14px;letter-spacing:.04em;white-space:nowrap;flex:0 0 auto}
+.acts.row .btn.pri{padding:11px 20px}
+.acts.tight{margin-top:4px}
+.acts.tight .btn{padding:8px 6px;font-size:13px}
 .btn{appearance:none;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:12px 18px;font-family:inherit;font-size:15px;letter-spacing:.08em;cursor:pointer;transition:background .25s,opacity .6s}
 .btn:hover{background:rgba(255,255,255,.08)}
 .btn.pri{background:var(--ink);color:var(--sky0);border-color:var(--ink)}
@@ -166,13 +171,12 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
     <p class="why" id="q-why"></p>
     <p class="ask" id="q-ask"></p>
     <div class="hint sans" id="hint">字還在出現，先讀。</div>
-    <div class="drag sans">手指往上滑，也會往上。</div>
-    <div class="acts">
+    <div class="acts row">
       <button class="btn pri" id="b-up" disabled>往上</button>
-      <button class="btn" id="b-share">把這句分享到 Threads</button>
+      <button class="btn" id="b-share">分享到 Threads</button>
       <a class="btn" id="b-book" href="#" target="_blank" rel="noopener">這本書</a>
     </div>
-    <div class="acts"><button class="btn ghost" id="b-stay">今天到這裡就好</button></div>
+    <div class="acts tight"><button class="btn ghost" id="b-stay">今天到這裡就好</button></div>
   </section>
 
   <!-- 風景：營地之間，什麼都不做 -->
