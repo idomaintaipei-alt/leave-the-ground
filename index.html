@@ -134,6 +134,7 @@ a.btn{text-decoration:none;display:inline-block}
 .recap a{display:block;margin-top:6px;font-size:12.5px;color:var(--ink2);text-decoration:none;letter-spacing:.05em}
 .recap a span{color:var(--ember);margin-right:6px}
 footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-spacing:.05em}
+footer .note{display:block;margin-top:8px}
 @media (min-width:600px){.q{font-size:31px}h1{font-size:34px}}
 </style>
 </head>
@@ -230,14 +231,14 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
       <button class="btn" id="b-share2">把今天分享到 Threads</button>
       <button class="btn" id="b-ig2">分享到 Instagram</button>
     </div>
-    <footer>引句取自臉譜出版「meters 山岳文學書系」各書中文版的書介、導讀與書名；書系由詹偉雄策畫．選書．導讀，2020–2024 共十本。這個網頁是一個讀者做的，與出版社無關。</footer>
+    <footer>引句取自臉譜出版「meters 山岳文學書系」各書中文版的書介、導讀與書名；書系由詹偉雄策畫．選書．導讀，2020–2024 共十本。<span class="note">這個網頁是一個讀者做的，與出版社無關。</span></footer>
   </section>
 </main>
 <div class="toast" id="toast"></div>
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
-const BUILD="1151127-1520";
+const BUILD="1151127-1525";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
