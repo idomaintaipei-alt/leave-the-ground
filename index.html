@@ -53,7 +53,7 @@ body.shot section{animation:none}
 body.shot{width:375px;overflow:hidden}
 body.shot main{width:375px}
 body.shot #mtn,body.shot #sun,body.shot #stars{width:375px;right:auto}
-body.shot .q,body.shot .src,body.shot .why,body.shot .ask{transition:none}
+body.shot .q,body.shot .src,body.shot .why,body.shot .ask,body.shot .intro-line,body.shot .intro-acts{transition:none}
 section.on{display:block}
 @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
@@ -265,7 +265,7 @@ const QUOTES=[
   why:"一九二四年六月八日，馬洛里與二十一歲的爾文消失在聖母峰接近山頂之處；一九九九年，他的遺體在北壁八千二百三十公尺被找到。這本書花十年、讀六百多本書，問的不是他有沒有登頂，而是：是什麼讓一個從戰壕裡活著回來的人，明知前方是死，仍然往上走。導讀把答案寫在標題裡。",ask:"如果不問結果，你此刻走的路，你還要走嗎？"},
  {b:7,m:["tired", "stuck"],q:"生命的代價是死亡。",by:"《靜謐的榮光》第十三章章名",
   why:"下冊最後一章。一九二四年六月八日，馬洛里和二十一歲的爾文消失在接近山頂的地方。從一戰戰壕活著回來的人，早已付過一次代價；這本書問的是，為什麼他們願意再付一次。",ask:"你已經付過的代價，\n有沒有讓你更知道自己要什麼？"},
- {b:6,m:["stuck", "tired"],q:"或許山並不在乎她們的性別，\n但人類社會在乎。",by:"詹偉雄，《殘暴之巔》導讀",
+ {b:6,m:["stuck", "tired"],q:"或許山並不在乎她們的性別，但人類社會在乎。",by:"詹偉雄，《殘暴之巔》導讀",
   why:"最早登上 K2 的五位女性，到一九九八年全部殞落，三位死在下撤的路上。山對每個人一樣殘暴；社會卻對她們多出一層審視，連母親的身分都成為被議論的理由。她們被山考驗，再被人考驗，然後仍然選擇上去。",ask:"你身上那層旁人看不見的重量，是什麼？"},
  {b:6,m:["quit", "stuck"],q:"向死而生，在死境綻放的生命之花。",by:"《殘暴之巔》推薦序標題",
   why:"最早登上 K2 的五位女性，沒有一位活過一九九八年。推薦序沒有用「悲劇」來說她們，用的是「綻放」。知道會結束的人，開出來的花不一樣。",ask:"如果知道會結束，你現在做的事會不一樣嗎？"},
@@ -289,7 +289,7 @@ const QUOTES=[
 const INTRO=[
  "有十個人，把自己放到會發亮、也會要命的地方。",
  "他們沒有全部回來。但留下了一些話。",
- "今天，\n先離開地面一公尺就好。",
+ "今天，先離開地面一公尺就好。",
 ];
 const CAMPS=["第一營地","第二營地","第三營地"], STAY=14; // 每個營地至少停 14 秒才亮「往上」
 /* 每種心情：山的形狀（主稜）＋第一營地前的一句開場 */
@@ -323,7 +323,7 @@ function fitQuote(el){
   const lines=el.textContent.split("\n"); const W=(el.parentElement&&el.parentElement.clientWidth)||331;   // 容器寬（含縮排）
   let need=0; lines.forEach((l,i)=>{ need=Math.max(need,[...l].length+(i===lines.length-1?1:0)); });
   const base=matchMedia("(min-width:600px)").matches?31:27;
-  const f=Math.max(16,Math.min(base,Math.floor(W/(need*1.04+1.25))));   // 1.25em＝左縮排 1.2em＋餘裕
+  const f=Math.max(14,Math.min(base,Math.floor(W/(need*1.04+1.25))));   // 1.25em＝左縮排 1.2em＋餘裕
   el.style.fontSize=f+"px";
 }
 function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));const el=$(id);el.classList.add("on");el.style.animation="none";el.offsetHeight;el.style.animation="";window.scrollTo({top:0,behavior:"smooth"});}
@@ -416,16 +416,25 @@ async function share(text,withCard){
 }
 const site=()=>location.href.split(/[?#]/)[0];
 
+
+/* 開場句字級：一行塞不下就縮，最小 18px */
+function fitIntro(el){
+  const W=(el.parentElement&&el.parentElement.clientWidth)||331;
+  const need=Math.max(...el.textContent.split("\n").map(l=>[...l].length));
+  el.style.fontSize=Math.max(18,Math.min(24,Math.floor(W/(need*1.06+0.3))))+"px";
+}
 /* 開場 */
 let introI=0;
 function introShow(){
   const L=$("#intro-line"), A=$(".intro-acts"); L.classList.remove("in"); A.classList.remove("in");
-  setTimeout(()=>{L.textContent=INTRO[introI]; L.classList.add("in"); $("#b-intro-next").textContent=introI<INTRO.length-1?"下一句":"好"; },250);
+  setTimeout(()=>{L.textContent=INTRO[introI]; fitIntro(L); L.classList.add("in"); $("#b-intro-next").textContent=introI<INTRO.length-1?"下一句":"好"; },250);
   setTimeout(()=>A.classList.add("in"),1600);
 }
 $("#b-intro-next").onclick=()=>{ introI++; if(introI>=INTRO.length){ show("#s-start"); } else introShow(); };
 $("#b-intro-skip").onclick=()=>show("#s-start");
 
+/* 拍照用：?i=N 直接顯示開場第 N 句 */
+(function(){ const v=new URLSearchParams(location.search).get("i"); if(v===null) return; document.body.classList.add("shot"); introI=Math.min(INTRO.length-1,Math.max(0,+v)); setTimeout(introShow,350); })();
 /* 拍照用：?q=N 直接開第 N 句，字全亮、不淡入 */
 (function(){ const v=new URLSearchParams(location.search).get("q"); if(v===null) return; const i=+v; if(!QUOTES[i]) return;
   document.body.classList.add("shot");
