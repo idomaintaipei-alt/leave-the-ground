@@ -152,7 +152,6 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
       <button class="mood wide" data-m="any">還行，只是想看看山</button>
     </div>
     <div class="acts senses">
-      <button class="btn ghost" id="b-tilt" hidden>讓山感覺你的手</button>
       <button class="btn ghost" id="b-geo" hidden>讓山知道你在多高</button>
     </div>
     <p class="back sans" id="back-line" hidden></p>
@@ -171,7 +170,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
       <button class="btn" id="b-share">把這句分享到 Threads</button>
       <a class="btn" id="b-book" href="#" target="_blank" rel="noopener">這本書</a>
     </div>
-    <div class="acts"><button class="btn ghost" id="b-stay">今天到這裡就好</button><button class="btn ghost" id="b-tilt2" hidden>讓山感覺你的手</button></div>
+    <div class="acts"><button class="btn ghost" id="b-stay">今天到這裡就好</button></div>
   </section>
 
   <!-- 風景：營地之間，什麼都不做 -->
@@ -472,15 +471,18 @@ function onTilt(e){
 async function enableTilt(){
   try{
     if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
-      const r=await DeviceOrientationEvent.requestPermission(); if(r!=="granted"){toast("沒有拿到感應權限");return;}
+      const r=await DeviceOrientationEvent.requestPermission(); if(r!=="granted") return;
     }
-    addEventListener("deviceorientation",onTilt); tiltOn=true; LS.set("ltg-tilt","1");
-    ["#b-tilt","#b-tilt2"].forEach(s=>{$(s).classList.add("on"); $(s).textContent="山感覺得到你的手了";});
-    $(".drag").textContent="手機平放，字會沉下去；慢慢舉起來，字才浮出來。";
-    toast("把手機放平，字會沉下去；舉起來，字才浮出來。");
-  }catch(_){ toast("這支手機不支援"); }
+    addEventListener("deviceorientation",onTilt); tiltOn=true;
+  }catch(_){}
 }
-if(typeof DeviceOrientationEvent!=="undefined"&&("ontouchstart" in window)){ ["#b-tilt","#b-tilt2"].forEach(s=>{$(s).hidden=false; $(s).onclick=enableTilt;}); }
+/* 預設就開：Android 直接掛；iPhone 要在第一次點擊裡問一次，之後就一直開著 */
+if(typeof DeviceOrientationEvent!=="undefined"&&("ontouchstart" in window)){
+  if(typeof DeviceOrientationEvent.requestPermission==="function"){
+    const once=()=>{ enableTilt(); removeEventListener("click",once,true); };
+    addEventListener("click",once,true);
+  } else enableTilt();
+}
 
 /* ---------- 山是活的（4）：海拔 ---------- */
 let baseAlt=0;
