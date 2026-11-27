@@ -162,6 +162,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
       <button class="btn ghost" id="b-geo" hidden>讓山知道你在多高</button>
     </div>
     <p class="back sans" id="back-line" hidden></p>
+    <p class="back sans" id="build-line"></p>
   </section>
 
   <section id="s-camp">
@@ -216,6 +217,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
+const BUILD="1151127-0901";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
@@ -294,12 +296,11 @@ let mood="any", alt=0, used=new Set(), step=0, cur=null, picked=[], timer=null, 
 const $=s=>document.querySelector(s), altEl=$("#alt b"), mtn=$("#mtn"), bars=[...document.querySelectorAll("#camps i")];
 
 let FORCE_B=(()=>{const v=new URLSearchParams(location.search).get("b"); return v===null?null:+v;})();  // 測試用：?b=0 第一營地抽總序，?b=7 抽靜謐的榮光
-/* 測試手勢：長按最上面「幾點的山」那行 1.5 秒 → 第一營地固定總序；再長按一次取消 */
-(function(){let t=null;const el=$("#skyname");
- const down=()=>{t=setTimeout(()=>{FORCE_B=(FORCE_B===0)?null:0; toast(FORCE_B===0?"測試：第一營地固定總序":"測試關閉");},1500);};
- const up=()=>clearTimeout(t);
- el.addEventListener("pointerdown",down); el.addEventListener("pointerup",up); el.addEventListener("pointercancel",up); el.addEventListener("pointerleave",up);
- el.addEventListener("contextmenu",e=>e.preventDefault());})();
+/* 測試手勢：1.5 秒內連點最上面「幾點的山」五下 → 第一營地固定總序；再五下取消 */
+(function(){let n=0,t=null;const el=$("#skyname");
+ el.addEventListener("click",()=>{n++; clearTimeout(t); t=setTimeout(()=>{n=0;},1500);
+   if(n>=5){n=0; FORCE_B=(FORCE_B===0)?null:0; toast(FORCE_B===0?"測試：第一營地固定總序":"測試關閉");}});
+})();
 function pick(){
   const books=new Set(picked.map(p=>p.b));
   if(FORCE_B!==null&&step===0){ const f=QUOTES.filter(q=>q.b===FORCE_B); if(f.length){ const q=f[Math.floor(Math.random()*f.length)]; used.add(QUOTES.indexOf(q)); return q; } }
@@ -408,6 +409,7 @@ function introShow(){
 $("#b-intro-next").onclick=()=>{ introI++; if(introI>=INTRO.length){ show("#s-start"); } else introShow(); };
 $("#b-intro-skip").onclick=()=>show("#s-start");
 introShow();
+$("#build-line").textContent="版本 "+BUILD;
 
 document.querySelectorAll(".mood").forEach(b=>b.addEventListener("click",()=>{
   mood=b.dataset.m; document.body.dataset.mood=mood; document.querySelector(".r1").setAttribute("d",MOODS[mood].ridge); applySky();
