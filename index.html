@@ -320,10 +320,10 @@ function pick(){
 
 /* 引句字級：依最長的一行算，塞不下就縮，最小 20px；斷行永遠只在句讀 */
 function fitQuote(el){
-  const lines=el.textContent.split("\n"); const W=el.clientWidth||331;
+  const lines=el.textContent.split("\n"); const W=(el.parentElement&&el.parentElement.clientWidth)||331;   // 容器寬（含縮排）
   let need=0; lines.forEach((l,i)=>{ need=Math.max(need,[...l].length+(i===lines.length-1?1:0)); });
   const base=matchMedia("(min-width:600px)").matches?31:27;
-  const f=Math.max(16,Math.min(base,Math.floor(W/(need*1.04))));
+  const f=Math.max(16,Math.min(base,Math.floor(W/(need*1.04+1.25))));   // 1.25em＝左縮排 1.2em＋餘裕
   el.style.fontSize=f+"px";
 }
 function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));const el=$(id);el.classList.add("on");el.style.animation="none";el.offsetHeight;el.style.animation="";window.scrollTo({top:0,behavior:"smooth"});}
