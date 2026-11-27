@@ -232,7 +232,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
-const BUILD="1151127-1450";
+const BUILD="1151127-1500";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
@@ -412,21 +412,32 @@ async function cardBase(topRatio){   // 共用底圖：天色照心情、星、�
   for(const [col,d] of layers){x.fillStyle=col;x.beginPath();const seg=d.match(/[ML][^MLZ]+/g);for(const s of seg){const [px,py]=s.slice(1).trim().split(",").map(Number);const X=px/1000*W,Y=top+py/420*sh;s[0]==="M"?x.moveTo(X,Y):x.lineTo(X,Y);}x.closePath();x.fill();}
   return {c,x,W,H,v};
 }
-function cardWrap(x,text,x0,y,maxW,lh){   // 逐字換行，標點不放行首；回傳下一行的 y
-  for(const seg of text.split("\n")){ let line=""; for(const ch of [...seg]){const t=line+ch;if(x.measureText(t).width>maxW&&!/[」。，！？…]/.test(ch)){x.fillText(line,x0,y);y+=lh;line=ch;}else line=t;} x.fillText(line,x0,y);y+=lh; }
+function cardWrap(x,text,x0,y,maxW,lh,dry){   // 逐字換行，標點不放行首；回傳下一行的 y；dry＝只量不畫
+  const put=(l,yy)=>{ if(!dry) x.fillText(l,x0,yy); };
+  for(const seg of text.split("\n")){ let line=""; for(const ch of [...seg]){const t=line+ch;if(x.measureText(t).width>maxW&&!/[」。，！？…]/.test(ch)){put(line,y);y+=lh;line=ch;}else line=t;} put(line,y);y+=lh; }
   return y;
 }
 /* 單句卡（營地、今天到這裡就好）：1080×1350 */
 async function makeCard(q){
-  const {c,x,W,H,v}=await cardBase(.60);
+  const {c,x,W,H,v}=await cardBase(.62);
   const ink="#e9e4d8",ink2="#a8b3bf",ember=v("--ember");
-  x.fillStyle=ember;x.font='300 26px "Noto Sans TC"';x.textBaseline="top";
-  const bk=q.b?BOOKS[q.b]:null; x.fillText((bk?`METERS ${String(q.b).padStart(2,"0")}　${bk.t}`:"METERS　書系總序"),96,120);
-  x.fillStyle=ink;x.font='500 58px "Noto Serif TC"';
-  let y=cardWrap(x,"「"+trimPunct(q.q)+"」",96,200,W-192,96);
-  y+=34;
-  x.fillStyle=ink2;x.font='300 28px "Noto Sans TC"';
-  const src=(bk?`《${bk.t}》${bk.a}　｜　`:"")+q.by; x.fillText(src,96,y);
+  x.textBaseline="top";
+  const bk=q.b?BOOKS[q.b]:null, maxW=W-192, text="「"+trimPunct(q.q)+"」";
+  // 字級：短句放大，長句縮小，最多三行
+  const n=[...trimPunct(q.q).replace(/\n/g,"")].length;
+  let f=n<=8?84:n<=12?72:n<=18?62:54, lh=Math.round(f*1.6);
+  x.font=`500 ${f}px "Noto Serif TC"`;
+  while(f>48 && (cardWrap(x,text,96,0,maxW,lh,true)/lh)>3){ f-=4; lh=Math.round(f*1.6); x.font=`500 ${f}px "Noto Serif TC"`; }
+  const hq=cardWrap(x,text,96,0,maxW,lh,true);
+  x.font='300 32px "Noto Sans TC"'; const hAsk=q.ask?cardWrap(x,q.ask,96,0,maxW,52,true):0;
+  const hSrc=44, hAll=hq+28+hSrc+(hAsk?34+hAsk:0);
+  const top=140, bottom=H*.74; let y=Math.max(top+70, top+(bottom-top-hAll)/2);   // 置中在天空（山的稜線大約從 .74 起才看得到）
+  x.fillStyle=ember;x.font='300 26px "Noto Sans TC"';
+  x.fillText((bk?`METERS ${String(q.b).padStart(2,"0")}　${bk.t}`:"METERS　書系總序"),96,y-70);
+  x.fillStyle=ink;x.font=`500 ${f}px "Noto Serif TC"`; y=cardWrap(x,text,96,y,maxW,lh);
+  y+=28; x.fillStyle=ink2;x.font='300 28px "Noto Sans TC"';
+  x.fillText((bk?`《${bk.t}》${bk.a}　｜　`:"")+q.by,96,y); y+=hSrc;
+  if(q.ask){ y+=34; x.fillStyle=ember;x.font='300 32px "Noto Sans TC"'; cardWrap(x,q.ask,96,y,maxW,52); }
   x.fillStyle=ink2;x.font='300 24px "Noto Sans TC"';x.fillText("離開地面　"+site().replace(/^https?:\/\//,""),96,H-80);
   return new Promise(res=>c.toBlob(res,"image/png"));
 }
