@@ -232,7 +232,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
-const BUILD="1151127-0901";
+const BUILD="1151127-1440";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
@@ -345,6 +345,7 @@ function fitQuote(el){   // 從大到小一格一格試，直到畫出來的行�
   if(!ok){ el.classList.add("tight"); for(let f=22; f>=14; f--){ el.style.fontSize=f+"px"; if(renderedLines(el)<=want) break; } }
   if(tmp) sec.style.display="";
 }
+function hideNow(...sels){ sels.forEach(sel=>{ const el=$(sel); el.style.transition="none"; el.classList.remove("in"); el.offsetHeight; el.style.transition=""; }); }
 function show(id){document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));const el=$(id);el.classList.add("on");el.style.animation="none";el.offsetHeight;el.style.animation="";window.scrollTo({top:0,behavior:"smooth"});}
 function setAlt(v){altEl.textContent=Math.round(v).toLocaleString();}
 
@@ -352,11 +353,11 @@ function camp(){
   cur=pick(); picked.push(cur);
   const bk=cur.b?BOOKS[cur.b]:null;
   $("#camp-tag").innerHTML=(step===0?`<span class="open">${MOODS[mood].open}</span>`:"")+CAMPS[step]+"　"+(bk?`METERS ${String(cur.b).padStart(2,"0")}`:"METERS 總序");
+  hideNow("#q-text","#q-src","#q-why","#q-ask");
   $("#q-text").textContent=trimPunct(cur.q); fitQuote($("#q-text"));
   $("#q-src").innerHTML=bk?`<b>《${bk.t}》</b><span class="sub">${bk.s}</span><span class="who">${bk.a}　｜　${cur.by}</span>`:`<span class="who">${cur.by}</span>`;
   $("#q-why").textContent=cur.why; $("#q-ask").textContent=cur.ask;
   const bb=$("#b-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
-  ["#q-text","#q-src","#q-why","#q-ask"].forEach(s=>$(s).classList.remove("in"));
   const up=$("#b-up"); up.disabled=true; up.textContent="往上"; $("#hint").textContent="字還在出現，先讀。";
   show("#s-camp");
   setTimeout(()=>$("#q-text").classList.add("in"),200);
@@ -445,7 +446,7 @@ function fitIntro(el){
 /* 開場 */
 let introI=0;
 function introShow(){
-  const L=$("#intro-line"), A=$(".intro-acts"); L.classList.remove("in"); A.classList.remove("in");
+  const L=$("#intro-line"), A=$(".intro-acts"); hideNow("#intro-line",".intro-acts");
   setTimeout(()=>{L.textContent=INTRO[introI]; fitIntro(L); L.classList.add("in"); $("#b-intro-next").textContent=introI<INTRO.length-1?"下一句":"好"; },250);
   setTimeout(()=>A.classList.add("in"),1600);
 }
@@ -505,8 +506,8 @@ function viewLine(){
 }
 function view(){
   clearInterval(timer);
+  hideNow("#view-line","#view-acts");
   $("#view-line").textContent=viewLine();
-  $("#view-line").classList.remove("in"); $("#view-acts").classList.remove("in");
   show("#s-view");
   setTimeout(()=>$("#view-line").classList.add("in"),1200);
   clearTimeout(viewT); viewT=setTimeout(()=>$("#view-acts").classList.add("in"),10000);
