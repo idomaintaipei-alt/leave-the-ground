@@ -50,6 +50,10 @@ header .k{font-size:12px;letter-spacing:.35em;color:var(--ink2)}
 
 section{display:none;animation:up .9s ease both}
 body.shot section{animation:none}
+body[data-align=center] .q{text-align:center;padding-left:0}
+body[data-align=center] .q::before{margin-left:0}
+body[data-align=end] .q{text-align:right;padding-left:0;padding-right:.2em}
+body[data-align=end] .q::before{margin-left:0}
 body.shot{width:375px;overflow:hidden}
 body.shot main{width:375px}
 body.shot #mtn,body.shot #sun,body.shot #stars{width:375px;right:auto}
@@ -157,7 +161,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
   </section>
 
   <section id="s-start">
-    <h1>你現在<br>在哪裡？</h1>
+    <h1>你現在在哪裡？</h1>
     <p class="lead">不用回答別人，點一個就好。<br><b>三句話，三個營地。</b>每一句，字會慢慢出現；<br>你停留多久，就往上多少。不用急。</p>
     <div class="moods">
       <button class="mood" data-m="stuck">撐不下去<small>每一步都重</small></button>
@@ -319,6 +323,9 @@ function pick(){
 }
 
 /* 引句字級：依最長的一行算，塞不下就縮，最小 20px；斷行永遠只在句讀 */
+/* 行尾標點：每行結尾的 ，。！？；： 去掉（句中保留），詩的排法 */
+function trimPunct(q){ return q.split("\n").map(l=>l.replace(/[，。！？；：]+$/,"")).join("\n"); }
+const NOPUNCT=true;   // 定案（11-27）：行尾標點不畫，句中保留
 function fitQuote(el){
   const lines=el.textContent.split("\n"); const W=(el.parentElement&&el.parentElement.clientWidth)||331;   // 容器寬（含縮排）
   let need=0; lines.forEach((l,i)=>{ need=Math.max(need,[...l].length+(i===lines.length-1?1:0)); });
@@ -333,7 +340,7 @@ function camp(){
   cur=pick(); picked.push(cur);
   const bk=cur.b?BOOKS[cur.b]:null;
   $("#camp-tag").innerHTML=(step===0?`<span class="open">${MOODS[mood].open}</span>`:"")+CAMPS[step]+"　"+(bk?`METERS ${String(cur.b).padStart(2,"0")}`:"METERS 總序");
-  $("#q-text").textContent=cur.q; fitQuote($("#q-text"));
+  $("#q-text").textContent=trimPunct(cur.q); fitQuote($("#q-text"));
   $("#q-src").innerHTML=bk?`<b>《${bk.t}》</b><span class="sub">${bk.s}</span><span class="who">${bk.a}　｜　${cur.by}</span>`:`<span class="who">${cur.by}</span>`;
   $("#q-why").textContent=cur.why; $("#q-ask").textContent=cur.ask;
   const bb=$("#b-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
@@ -373,7 +380,7 @@ function summit(){
   $("#summit-lead").innerHTML=`今天你離開地面 <b>${alt.toLocaleString()}</b> 公尺，${peakLine(alt)}<br>帶走三句話。哪一句停住了你，就從那本書開始。`;
   const R=$("#recap"); R.innerHTML="";
   picked.forEach(q=>{const bk=q.b?BOOKS[q.b]:null; const d=document.createElement("div");
-    d.innerHTML=`<div class="rq">「${q.q}」</div>`+(bk?`<a href="${bk.u}" target="_blank" rel="noopener"><span>${String(q.b).padStart(2,"0")}</span>《${bk.t}》${bk.s}</a>`:`<a><span>00</span>meters 書系總序</a>`);
+    d.innerHTML=`<div class="rq">「${trimPunct(q.q)}」</div>`+(bk?`<a href="${bk.u}" target="_blank" rel="noopener"><span>${String(q.b).padStart(2,"0")}</span>《${bk.t}》${bk.s}</a>`:`<a><span>00</span>meters 書系總序</a>`);
     R.appendChild(d);});
   show("#s-summit");
 }
@@ -397,7 +404,7 @@ async function makeCard(q){
   x.fillStyle=ember;x.font='300 26px "Noto Sans TC"';x.textBaseline="top";
   const bk=q.b?BOOKS[q.b]:null; x.fillText((bk?`METERS ${String(q.b).padStart(2,"0")}　${bk.t}`:"METERS　書系總序"),96,120);
   x.fillStyle=ink;x.font='500 58px "Noto Serif TC"';
-  let y=200,maxW=W-192; const segs=("「"+q.q+"」").split("\n");
+  let y=200,maxW=W-192; const segs=("「"+trimPunct(q.q)+"」").split("\n");
   for(const seg of segs){ let line=""; for(const ch of [...seg]){const t=line+ch;if(x.measureText(t).width>maxW&&!/[」。，！？…]/.test(ch)){x.fillText(line,96,y);y+=96;line=ch;}else line=t;} x.fillText(line,96,y);y+=96; }
   y+=34;
   x.fillStyle=ink2;x.font='300 28px "Noto Sans TC"';
@@ -441,7 +448,7 @@ $("#b-intro-skip").onclick=()=>show("#s-start");
   setTimeout(()=>{ show("#s-start"); mood="any"; document.body.dataset.mood=mood; applySky(); step=0; alt=0; picked=[]; used.clear();
     used.add(i); cur=QUOTES[i]; picked.push(cur); const bk=cur.b?BOOKS[cur.b]:null;
     $("#camp-tag").innerHTML=`<span class="open">${MOODS[mood].open}</span>第一營地　`+(bk?`METERS ${String(cur.b).padStart(2,"0")}`:"METERS 總序");
-    $("#q-text").textContent=cur.q; fitQuote($("#q-text"));
+    $("#q-text").textContent=trimPunct(cur.q); fitQuote($("#q-text"));
     $("#q-src").innerHTML=bk?`<b>《${bk.t}》</b><span class="sub">${bk.s}</span><span class="who">${bk.a}　｜　${cur.by}</span>`:`<span class="who">${cur.by}</span>`;
     $("#q-why").textContent=cur.why; $("#q-ask").textContent=cur.ask;
     const bb=$("#b-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
@@ -494,7 +501,7 @@ function stay(){
   clearInterval(timer); clearTimeout(viewT); remember(); $("#s-camp").style.opacity=""; mtn.style.filter="";
   const bk=cur&&cur.b?BOOKS[cur.b]:null;
   $("#stay-tag").textContent=CAMPS[step]+"　"+alt.toLocaleString()+" m";
-  $("#stay-q").textContent=cur?cur.q:""; fitQuote($("#stay-q"));
+  $("#stay-q").textContent=cur?trimPunct(cur.q):""; fitQuote($("#stay-q"));
   $("#stay-src").innerHTML=bk?`<b>《${bk.t}》</b><span class="sub">${bk.s}</span><span class="who">${bk.a}　｜　${cur.by}</span>`:(cur?`<span class="who">${cur.by}</span>`:"");
   const bb=$("#b-stay-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
   bars.forEach((b,i)=>{b.classList.toggle("done",i<=step);b.classList.remove("now");});
@@ -504,9 +511,9 @@ $("#b-up").onclick=()=>{ step++; if(step>=3) summit(); else view(); };
 $("#b-view-go").onclick=()=>camp();
 $("#b-view-stay").onclick=()=>stay();
 $("#b-stay").onclick=()=>stay();
-$("#b-stay-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q.replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n今天到這裡就好。\n${site()}`,true);};
+$("#b-stay-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n今天到這裡就好。\n${site()}`,true);};
 $("#b-stay-again").onclick=()=>$("#b-again").onclick();
-$("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${cur.q.replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true);};
+$("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true);};
 $("#b-share2").onclick=()=>share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n十本山岳文學，一次一句。\n${site()}`);
 $("#b-again").onclick=()=>{clearInterval(timer);alt=baseAlt;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;applySky();bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
 
