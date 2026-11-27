@@ -111,6 +111,14 @@ h1{font-weight:300;font-size:30px;line-height:1.35;letter-spacing:.06em;margin:3
 .ask{white-space:pre-line;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:15.5px;line-height:1.9;color:var(--ember);opacity:0;transition:opacity 1.8s ease}
 .ask.in{opacity:1}
 .hint{margin-top:26px;font-size:12px;letter-spacing:.2em;color:var(--ink2);opacity:.75}
+.book{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);font-size:14.5px;line-height:1.95;color:var(--ink);animation:up .6s ease both}
+.book .pub{font-size:12px;letter-spacing:.05em;color:var(--ink2);margin:0 0 12px;line-height:1.8}
+.book .pub b{display:block;color:var(--ink);font-weight:500;font-size:15px;letter-spacing:.04em}
+.book .pub i{display:block;font-style:normal;color:var(--ink2);margin-bottom:2px}
+.book p{margin:0 0 12px;text-align:justify}
+.book .go{display:inline-block;margin-top:2px;font-size:13px;letter-spacing:.08em;color:var(--ember);text-decoration:none;border-bottom:1px solid var(--ember);padding-bottom:1px}
+.book .src-note{display:block;margin-top:14px;font-size:11.5px;letter-spacing:.05em;color:var(--ink2);opacity:.75}
+#b-book.on{background:rgba(255,255,255,.1);color:var(--ember);border-color:var(--ember)}
 .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .acts.row{flex-wrap:nowrap;gap:8px}
 .acts.row .btn{padding:11px 6px;font-size:clamp(12px,3.6vw,14px);letter-spacing:.02em;white-space:nowrap;flex:1 1 0;min-width:0;text-align:center;overflow:hidden;text-overflow:ellipsis}
@@ -194,9 +202,10 @@ footer .note{display:block;margin-top:8px}
       <button class="btn pri" id="b-up" disabled>往上</button>
       <button class="btn" id="b-share">Threads</button>
       <button class="btn" id="b-ig">IG</button>
-      <a class="btn" id="b-book" href="#" target="_blank" rel="noopener">這本書</a>
+      <button class="btn" id="b-book">這本書</button>
     </div>
     <div class="acts tight"><button class="btn ghost" id="b-stay">今天到這裡就好</button></div>
+    <div class="book sans" id="q-book" hidden></div>
   </section>
 
   <!-- 風景：營地之間，什麼都不做 -->
@@ -238,7 +247,7 @@ footer .note{display:block;margin-top:8px}
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
-const BUILD="1151127-1525";
+const BUILD="1151127-1710";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
@@ -251,6 +260,52 @@ const BOOKS={
  8:{t:"野蠻競技場",s:"年輕的心與困難的山之最後告白",a:"喬．塔斯克",u:"https://readmoo.com/book/210279602000101"},
  9:{t:"寧為一日猛虎",s:"艾利克斯．麥金泰爾與他的生命之山",a:"約翰．波特",u:"https://www.books.com.tw/products/0010986286"},
  10:{t:"餵鼠",s:"一種老派登山家風範",a:"艾爾．艾佛瑞茲",u:"https://readmoo.com/book/210337502000101"},
+};
+/* 這本書：節錄自《離開地面：十本山岳文學，十個問題》（1151126），只取自中文版書介、目錄與導讀 */
+const BLURB={
+ 0:{pub:"臉譜 meters 山岳文學書系｜詹偉雄 策畫．選書．導讀｜2020–2024",
+    ps:["這套書講的不是怎麼爬山，是人為什麼要離開地面。十本，十個不同的人，有的和搭檔一起消失在聖母峰，有的七十三歲才把年輕時的手札寫成書，有的不出名、不靠山吃飯，每年夏天還是去。",
+        "你不用照順序讀。哪一句讓你停下來，就從那一本開始。"]},
+ 1:{pub:"彼得．博德曼 著｜陳秋萍 譯｜臉譜 2020",
+    ps:["一九七五年，二十五歲的彼得．博德曼跟著一支百人大隊登上聖母峰，是隊裡最年輕的一個。照理說，他該滿足了。可是隔年，他和大他三歲的喬．塔斯克，兩個人，去了印度的強卡邦峰：一面乳白色的花崗岩壁，垂直向上一千五百公尺。因為會發亮，被叫作輝耀之山。",
+        "四十天，其中四個夜晚是吊在岩壁上睡的。書裡最誠實的地方不是攀登，是彼得寫自己：喬是他焦慮的來源，他老覺得自己像個跟班。一九八二年五月，兩個人一起消失在聖母峰東北脊。",
+        "詹偉雄說，這是一本關於青春的山岳文學。青春不是年紀，是你還願不願意，把自己放到一個會發亮、也會要命的地方。"]},
+ 2:{pub:"約翰．繆爾 著｜呂奕欣 譯｜臉譜 2020（2026 改版）",
+    ps:["約翰．繆爾十一歲從蘇格蘭跟著全家移民到美國威斯康辛，後來在工廠的一次意外裡險些失明。眼睛好了以後，他開始走路。一八六九年夏天，他受邀跟著牧羊人和一大群羊，在內華達山區走了一整個夏天，一路記：美熹德河、優勝美地、特納亞湖、莫諾湖、圖奧勒米。",
+        "這些手札他放了四十多年，七十三歲才改寫成書。所以你讀到的，是一個老人回頭看那個初次進山的年輕人，眼睛還是亮的。後來他促成優勝美地改由聯邦管轄，創立山巒俱樂部，當會長直到過世。",
+        "這本書沒有驚險，只有一個人，認真地看。"]},
+ 3:{pub:"柏娜黛．麥當勞 著｜劉麗真 譯｜臉譜 2021",
+    ps:["一九七〇到九〇年代，波蘭還在鐵幕裡。那裡的登山家在國內做苦工、清理和彩繪工廠煙囪，出國時走私威士忌和舶來品換經費；衣服從布料和拉鍊開始手縫，登山靴請鞋匠做，冰斧請鐵匠打。然後他們去了喜馬拉雅，在最艱難的冬季，爬八千公尺的山。",
+        "庫庫奇卡爬完十四座：十座走新路線、四座在冬天、一座獨攀，一九八九年死在洛子峰南壁。汪達．盧凱維茲是第一位登上聖母峰的歐洲女性，一九九二年死在干城章嘉。黃金年代怎麼結束的？書上說不是政治，是日子好過了，海外登山的魅力不再。",
+        "原來最強的，常常長在最窮的地方。"]},
+ 4:{pub:"克里斯．鮑寧頓 著｜林友民 譯｜臉譜 2021",
+    ps:["一九七〇年，克里斯．鮑寧頓帶了二十一個人去尼泊爾：七個攀登隊員、一個醫生、基地營經理、電視轉播團隊，還有郵差、廚師和雪巴。目標是安娜普納南壁，頂峰八千零九十一公尺，從底到頂落差近三千六百公尺，從來沒有人爬過。",
+        "整整兩個月，章節照著日期走：跋涉、聖殿、鞍部、冰脊、冰崖、大岩階帶、鐵熨斗、消耗戰、最後一擊。他們成功了。然後第十八章，叫做悲劇。書介只說：遠征即將結束前，一件令所有人心碎的事發生了。",
+        "詹偉雄說這趟是喜馬拉雅的轉捩點：從此登山的目標不再是登頂，而是走一條困難的路。"]},
+ 5:{pub:"詹偉雄 選編｜劉麗真、林友民、李屹 譯｜臉譜 2021",
+    ps:["這不是一本故事書。詹偉雄從十九世紀中葉到二十世紀初的歐洲，挑了十一個人的十七篇文章：廷德爾、萊斯禮．史蒂芬、溫珀、馬默理、溫斯洛普．楊、馬洛里、榮赫鵬、賀曼．布爾、馬丁．康威、齊美爾、諾伊斯。那是人類剛開始爬山、還說不清自己為什麼要爬的年代。",
+        "馬洛里說登山者是藝術家，史蒂芬寫一個登山家的懊悔，溫珀寫「但是，繩索斷了」，社會學家齊美爾談山岳的美學。書介問：高山如此危險且致命，仍有無數人即使犧牲生命也要登上，登山的意義是什麼？它給的方向是：登山者，其實就是現代人的隱喻。",
+        "你不爬山，也在爬。"]},
+ 6:{pub:"珍妮佛．喬登 著｜呂奕欣 譯｜臉譜 2022",
+    ps:["最早登上 K2 的五個女人：汪妲．魯特凱維奇、莉莉安．巴哈德、茱莉．特利斯、向黛兒．莫迪、艾莉森．哈葛利夫。到一九九八年，五個人全部不在了，三個死在 K2 下山的路上。艾莉森一九九五年五月才無氧登上聖母峰，八月十三日登頂 K2，下撤途中去世。",
+        "珍妮佛．喬登為了拍紀錄片，兩次住在 K2 山腳下。起點是一九九八年，她讀到的一篇悼念文章。這本書的章名裡有「母親與山」，有「熱情的代價」。",
+        "山對每個人一樣殘暴，人對女人多一層。被山考驗一次，再被人考驗一次，她們還是去了。"]},
+ 7:{pub:"韋德．戴維斯 著｜鄭煥昇 譯｜臉譜 2022（上下冊）",
+    ps:["韋德．戴維斯花了十年，讀了六百多本書，走訪喜馬拉雅，寫英國一九二一、一九二二、一九二四年三次聖母峰遠征。但上冊幾乎都在講第一次世界大戰，講大英帝國和圖博的紛爭，下冊才真的入山：北坳、眾人渴望的山巔、生命之索、生命的代價是死亡。",
+        "因為他要講的不是爬山，是那一代從戰壕回來的人，為什麼把生死看得那麼輕。一九二四年六月八日，馬洛里和二十一歲的山帝．爾文消失在接近山頂的地方。一九九九年，馬洛里的遺體在北壁八千二百三十公尺處被找到。",
+        "書介說：本書想探究的，並非馬洛里是否登頂，而是究竟是什麼讓這群登山家寧可犧牲也要奮力攀進，直至生命最後一刻。"]},
+ 8:{pub:"喬．塔斯克 著｜鄭煥昇 譯｜臉譜 2023",
+    ps:["《輝耀之山》裡那個冷淡、讓彼得焦慮的搭檔，喬．塔斯克，一九四八年生於英格蘭赫爾，是第一個在冬天爬上艾格峰北壁的英國人。這本書是他自己寫的：七章，七座山。艾格峰、開車橫越歐亞大陸去爬的都納吉里峰、強卡邦峰（換他的視角再講一次）、兩次失敗的 K2、新路線無氧首登的干城章嘉，最後一章叫「世界末日」。",
+        "一九八二年，他在出發去聖母峰的前夕把書稿交出去。五月十七日，他和彼得最後一次被看見，在兩萬七千英尺高的東北脊。出版者在序裡說，這本書是獻給喬的紀念碑。",
+        "你讀的是一個人最後的告白，而他自己不知道那是最後。"]},
+ 9:{pub:"約翰．波特 著｜李忞 譯｜張元植 審訂｜臉譜 2024",
+    ps:["艾利克斯．麥金泰爾，七〇年代竄起的英國天才，主張輕量速攀：不帶帳篷，不帶大量食物和瓦斯，專找沒人爬過的線。他自己寫過：雄心指向山壁，風格成了執迷。一九八二年十月十七日，他在安娜普納南壁被一顆落石擊中，二十八歲。母親吉恩把這句古諺刻在南壁的碑上。",
+        "寫這本書的約翰．波特大他八歲，里茲大學登山社認識，十年繩伴。那一趟三人小組，波特因為腹瀉留在基地營，成了把死訊帶回去的人。吉恩要求等她過世後才能出版，原書二〇一四年才問世，離那顆石頭三十二年。",
+        "詹偉雄在導讀結尾寫：能當一天的老虎，也就是接近永恆了。"]},
+ 10:{pub:"艾爾．艾佛瑞茲 著｜鄭煥昇 譯｜臉譜 2024",
+    ps:["莫．安東尼，一九三九年生於威爾斯，十九歲起浪跡天涯：阿爾卑斯、多洛米蒂、巴塔哥尼亞、安地斯，再到喜馬拉雅。一九七四到八三年，每年夏天都回去，大多數遠征沒有人知道。一九七七年他和鮑寧頓、道格．史考特首攀「食人魔峰」，史考特摔斷兩隻腳踝，鮑寧頓斷了兩根肋骨，是他把人帶下山。",
+        "他不靠登山吃飯，自己開了一間小小的裝備公司。一九八九年腦瘤過世，五十歲。寫他的人是艾爾．艾佛瑞茲，英國詩人，《紐約客》的作者，也是他多年的繩伴。「餵鼠」是西方登山家的俚語：心裡有一隻無形的老鼠，要不斷餵牠，所以得一座一座爬。",
+        "推薦序的標題是：攀登才沒那麼多名堂。這是書系的最後一本，主角是十本裡唯一不出名的人。"]},
 };
 /* q 引句（書介／導讀／書名裡的短句）  why 一段白話  ask 留給讀者的問題 */
 const QUOTES=[
@@ -363,7 +418,7 @@ function camp(){
   $("#q-text").textContent=trimPunct(cur.q); fitQuote($("#q-text"));
   $("#q-src").innerHTML=bk?`<b>《${bk.t}》</b><span class="sub">${bk.s}</span><span class="who">${bk.a}　｜　${cur.by}</span>`:`<span class="who">${cur.by}</span>`;
   $("#q-why").textContent=cur.why; $("#q-ask").textContent=cur.ask;
-  const bb=$("#b-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
+  const bb=$("#b-book"); bb.textContent=bk?"這本書":"這套書"; bb.classList.remove("on"); $("#q-book").hidden=true;
   const up=$("#b-up"); up.disabled=true; up.textContent="往上"; $("#hint").textContent="字還在出現，先讀。";
   show("#s-camp"); prepCard(()=>makeCard(cur));
   setTimeout(()=>$("#q-text").classList.add("in"),200);
@@ -522,7 +577,7 @@ $("#b-intro-skip").onclick=()=>show("#s-start");
     $("#q-text").textContent=trimPunct(cur.q); fitQuote($("#q-text"));
     $("#q-src").innerHTML=bk?`<b>《${bk.t}》</b><span class="sub">${bk.s}</span><span class="who">${bk.a}　｜　${cur.by}</span>`:`<span class="who">${cur.by}</span>`;
     $("#q-why").textContent=cur.why; $("#q-ask").textContent=cur.ask;
-    const bb=$("#b-book"); if(bk){bb.textContent="這本書";bb.href=bk.u;} else {bb.textContent="這套書";bb.href=SERIES_URL;}
+    const bb=$("#b-book"); bb.textContent=bk?"這本書":"這套書"; bb.classList.remove("on"); $("#q-book").hidden=true;
     show("#s-camp"); ["#q-text","#q-src","#q-why","#q-ask"].forEach(x=>$(x).classList.add("in")); $("#hint").textContent="";
   },300);
 })();
@@ -588,6 +643,17 @@ $("#b-stay").onclick=()=>stay();
 $("#b-stay-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n今天到這裡就好。\n${site()}`,true);};
 $("#b-stay-ig").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n今天到這裡就好。\n${site()}`,true,"ig");};
 $("#b-stay-again").onclick=()=>$("#b-again").onclick();
+$("#b-book").onclick=()=>{
+  const box=$("#q-book"), bb=$("#b-book");
+  if(!box.hidden){ box.hidden=true; bb.classList.remove("on"); return; }
+  const bk=cur.b?BOOKS[cur.b]:null, d=BLURB[cur.b||0]; if(!d) return;
+  const head=bk?`<b>《${bk.t}》</b><i>${bk.s}</i>${d.pub}`:`<b>十本山岳文學，十個問題</b>${d.pub}`;
+  box.innerHTML=`<p class="pub">${head}</p>`+d.ps.map(t=>`<p>${t}</p>`).join("")+
+    `<a class="go" href="${bk?bk.u:SERIES_URL}" target="_blank" rel="noopener">${bk?"去看這本書":"去看這套書"}</a>`+
+    `<span class="src-note">只取自中文版書介、目錄與導讀</span>`;
+  box.hidden=false; bb.classList.add("on");
+  setTimeout(()=>box.scrollIntoView({behavior:"smooth",block:"nearest"}),80);
+};
 $("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true);};
 $("#b-ig").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true,"ig");};
 $("#b-ig2").onclick=()=>{ const lines=picked.map(q=>{const bk=q.b?BOOKS[q.b]:null; return `「${trimPunct(q.q).replace(/\n/g,"")}」${bk?`《${bk.t}》`:"總序"}`;}).join("\n"); share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n\n${lines}\n\n十本山岳文學，一次一句。\n${site()}`, true, "ig"); };
