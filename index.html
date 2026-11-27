@@ -299,7 +299,7 @@ function camp(){
   setTimeout(()=>$("#q-ask").classList.add("in"),8000);
   // 停留＝上升
   bars.forEach((b,i)=>{b.classList.toggle("done",i<step);b.classList.toggle("now",i===step);b.style.setProperty("--p",0);});
-  const base=alt, gain=600+Math.floor(Math.random()*300); t0=performance.now(); dragBonus=0;
+  const base=alt, gain=500+Math.floor(Math.random()*800); t0=performance.now(); dragBonus=0;  // 三段加起來約 1,500～3,900，落在七星山到玉山之間
   clearInterval(timer);
   timer=setInterval(()=>{
     const s=(performance.now()-t0)/1000+dragBonus, k=Math.min(1,s/STAY);
@@ -310,11 +310,20 @@ function camp(){
     document.body.classList.toggle("high",base+gain*k>1500);
   },100);
 }
+/* 台灣的山（海拔取自中文維基百科條目資訊框，2026-11-27 核對） */
+const PEAKS=[["象山",184],["觀音山",616],["大屯山",1092],["七星山",1120],["鳶嘴山",2191],["加里山",2220],["北大武山",3092],["嘉明湖",3310],["合歡山主峰",3417],["大霸尖山",3492],["奇萊北峰",3607],["南湖大山",3742],["雪山",3886],["玉山",3952]];
+function peakLine(a){
+  if(a>PEAKS[PEAKS.length-1][1]) return `比玉山還高了。`;
+  let best=PEAKS[0]; for(const p of PEAKS) if(Math.abs(p[1]-a)<Math.abs(best[1]-a)) best=p;
+  const d=a-best[1], ad=Math.abs(d);
+  if(ad<=60) return `差不多就是${best[0]}的高度（${best[1].toLocaleString()} 公尺）。`;
+  return d<0?`再 ${ad.toLocaleString()} 公尺就是${best[0]}（${best[1].toLocaleString()} 公尺）。`:`已經比${best[0]}（${best[1].toLocaleString()} 公尺）高 ${ad.toLocaleString()} 公尺。`;
+}
 function summit(){
   remember(); $("#s-camp").style.opacity=""; mtn.style.filter="";
   bars.forEach(b=>{b.classList.add("done");b.classList.remove("now");});
   $("#summit-h").textContent=`你到山頂了。`;
-  $("#summit-lead").innerHTML=`今天你離開地面 <b>${alt.toLocaleString()}</b> 公尺，帶走三句話。<br>哪一句停住了你，就從那本書開始。`;
+  $("#summit-lead").innerHTML=`今天你離開地面 <b>${alt.toLocaleString()}</b> 公尺，${peakLine(alt)}<br>帶走三句話。哪一句停住了你，就從那本書開始。`;
   const R=$("#recap"); R.innerHTML="";
   picked.forEach(q=>{const bk=q.b?BOOKS[q.b]:null; const d=document.createElement("div");
     d.innerHTML=`<div class="rq">「${q.q}」</div>`+(bk?`<a href="${bk.u}" target="_blank" rel="noopener"><span>${String(q.b).padStart(2,"0")}</span>《${bk.t}》${bk.s}</a>`:`<a><span>00</span>meters 書系總序</a>`);
