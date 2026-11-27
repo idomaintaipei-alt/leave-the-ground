@@ -466,7 +466,8 @@ $("#b-again").onclick=()=>{clearInterval(timer);alt=baseAlt;step=0;used.clear();
 (async()=>{try{
   const r=await fetch(location.pathname,{method:"HEAD",cache:"no-store"}); const e=r.headers.get("etag"); if(!e) return;
   const k="ltg-etag", old=localStorage.getItem(k); localStorage.setItem(k,e);
-  if(old && old!==e && !sessionStorage.getItem("ltg-reloaded")){ sessionStorage.setItem("ltg-reloaded","1"); location.reload(); }
+  if(old && old!==e && !sessionStorage.getItem("ltg-reloaded")){ sessionStorage.setItem("ltg-reloaded","1");
+    const u=new URL(location.href); u.searchParams.set("r",Date.now().toString(36)); location.replace(u.toString()); }   // 換個帶時間戳的網址，強制抓新版（不吃快取）
   else sessionStorage.removeItem("ltg-reloaded");
 }catch(_){}})();
 /* ---------- 山是活的（2）：山認得你 ---------- */
