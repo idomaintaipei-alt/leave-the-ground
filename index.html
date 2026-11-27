@@ -276,7 +276,9 @@ let mood="any", alt=0, used=new Set(), step=0, cur=null, picked=[], timer=null, 
 const $=s=>document.querySelector(s), altEl=$("#alt b"), mtn=$("#mtn"), bars=[...document.querySelectorAll("#camps i")];
 
 function pick(){
+  const books=new Set(picked.map(p=>p.b));
   let pool=QUOTES.filter((q,i)=>!used.has(i)&&(mood==="any"||q.m.includes(mood)));
+  const fresh=pool.filter(q=>!books.has(q.b)); if(fresh.length) pool=fresh;   // 同一趟優先換不同的書
   if(!pool.length) pool=QUOTES.filter((q,i)=>!used.has(i));
   const q=pool[Math.floor(Math.random()*pool.length)]; used.add(QUOTES.indexOf(q)); return q;
 }
