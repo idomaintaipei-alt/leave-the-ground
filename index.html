@@ -191,7 +191,8 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
     <div class="hint sans" id="hint">字還在出現，先讀。</div>
     <div class="acts row">
       <button class="btn pri" id="b-up" disabled>往上</button>
-      <button class="btn" id="b-share">分享到 Threads</button>
+      <button class="btn" id="b-share">Threads</button>
+      <button class="btn" id="b-ig">IG</button>
       <a class="btn" id="b-book" href="#" target="_blank" rel="noopener">這本書</a>
     </div>
     <div class="acts tight"><button class="btn ghost" id="b-stay">今天到這裡就好</button></div>
@@ -214,6 +215,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
     <p class="stay-line">今天到這裡。<br>山還在，書也還在，下次再來。</p>
     <div class="acts">
       <button class="btn" id="b-stay-share">把這句分享到 Threads</button>
+      <button class="btn" id="b-stay-ig">分享到 Instagram</button>
       <a class="btn" id="b-stay-book" href="#" target="_blank" rel="noopener">這本書</a>
       <button class="btn ghost" id="b-stay-again">改天再爬</button>
     </div>
@@ -226,6 +228,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
     <div class="acts">
       <button class="btn pri" id="b-again">再爬一次</button>
       <button class="btn" id="b-share2">把今天分享到 Threads</button>
+      <button class="btn" id="b-ig2">分享到 Instagram</button>
     </div>
     <footer>引句取自臉譜出版「meters 山岳文學書系」各書中文版的書介、導讀與書名；書系由詹偉雄策畫．選書．導讀，2020–2024 共十本。這個網頁是一個讀者做的，與出版社無關。</footer>
   </section>
@@ -234,7 +237,7 @@ footer{margin-top:34px;color:var(--ink2);font-size:12px;line-height:1.9;letter-s
 
 <script>
 /* 書系清單（博客來《寧為一日猛虎》頁面底下有臉譜官方的 meters 書系列表） */
-const BUILD="1151127-1515";
+const BUILD="1151127-1520";
 const SERIES_URL="https://www.books.com.tw/products/0010986286";
 const BOOKS={
  1:{t:"輝耀之山",s:"兩位如風少年的絕壁長征",a:"彼得．博德曼",u:"https://readmoo.com/book/210149374000101"},
@@ -465,9 +468,17 @@ async function makeSummitCard(qs,altV){
 }
 let cardJob=null;   // 這個畫面的分享卡，先畫好放著
 function prepCard(fn){ cardJob=(async()=>{ try{ const b=await fn(); return b?[new File([b],"leave-the-ground.png",{type:"image/png"})]:[]; }catch(_){ return []; } })(); }
-async function share(text,withCard){
+async function share(text,withCard,app){
   let files=[];
   if(withCard){ files=await (cardJob||Promise.resolve([])); }   // 通常已畫好，等的只是一瞬
+  if(app==="ig"){   // Instagram：文字先複製（IG 不收文字），圖走分享面板，面板裡選 Instagram
+    try{ navigator.clipboard&&navigator.clipboard.writeText(text).catch(()=>{}); }catch(_){}
+    if(navigator.share&&files.length&&navigator.canShare&&navigator.canShare({files})){
+      try{ await navigator.share({files}); toast("說明文字已複製，貼上就好"); return; }catch(e){ if(e&&e.name==="AbortError") return; }
+    }
+    if(files.length){ const a=document.createElement("a");a.href=URL.createObjectURL(files[0]);a.download="leave-the-ground.png";a.click(); }
+    toast("圖存下了、文字複製了，到 Instagram 貼"); return;
+  }
   if(navigator.share){
     try{ if(files.length&&navigator.canShare&&navigator.canShare({files})) {await navigator.share({text,files});return;} await navigator.share({text});return; }
     catch(e){ if(e&&e.name==="AbortError") return;
@@ -574,8 +585,11 @@ $("#b-view-go").onclick=()=>camp();
 $("#b-view-stay").onclick=()=>stay();
 $("#b-stay").onclick=()=>stay();
 $("#b-stay-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n今天到這裡就好。\n${site()}`,true);};
+$("#b-stay-ig").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n今天到這裡就好。\n${site()}`,true,"ig");};
 $("#b-stay-again").onclick=()=>$("#b-again").onclick();
 $("#b-share").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true);};
+$("#b-ig").onclick=()=>{const bk=cur.b?BOOKS[cur.b]:null; share(`「${trimPunct(cur.q).replace(/\n/g,"")}」\n── ${bk?`《${bk.t}》`:"meters 書系總序"}，${cur.by}\n\n${cur.ask}\n${site()}`,true,"ig");};
+$("#b-ig2").onclick=()=>{ const lines=picked.map(q=>{const bk=q.b?BOOKS[q.b]:null; return `「${trimPunct(q.q).replace(/\n/g,"")}」${bk?`《${bk.t}》`:"總序"}`;}).join("\n"); share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n\n${lines}\n\n十本山岳文學，一次一句。\n${site()}`, true, "ig"); };
 $("#b-share2").onclick=()=>{ const lines=picked.map(q=>{const bk=q.b?BOOKS[q.b]:null; return `「${trimPunct(q.q).replace(/\n/g,"")}」${bk?`《${bk.t}》`:"總序"}`;}).join("\n"); share(`今天在「離開地面」停了三個營地，離開地面 ${alt.toLocaleString()} 公尺。\n\n${lines}\n\n十本山岳文學，一次一句。\n${site()}`, true); };
 $("#b-again").onclick=()=>{clearInterval(timer);alt=baseAlt;step=0;used.clear();picked=[];setAlt(0);mtn.style.transform="";document.body.classList.remove("high");delete document.body.dataset.mood;document.querySelector(".r1").setAttribute("d",MOODS.any.ridge);snowFollow();applySky();bars.forEach(b=>{b.classList.remove("done","now");b.style.setProperty("--p",0);});show("#s-start");};
 
